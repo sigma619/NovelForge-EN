@@ -15,6 +15,7 @@ from app.db.models import CardType
 from app.schemas.response_registry import RESPONSE_MODEL_MAP
 from app.services.ai.core.model_builder import build_model_from_json_schema
 from app.services.ai.core.llm_service import generate_structured
+from app.utils.schema_utils import filter_schema_for_ai
 from ...expressions.evaluator import evaluate_expression
 from ...registry import register_node
 from ..base import BaseNode
@@ -117,7 +118,7 @@ class SequentialStructuredNode(BaseNode[SequentialStructuredInput, SequentialStr
             raise ValueError(f"Failed to load model Schema: {inputs.response_model_id}")
         dynamic_output = build_model_from_json_schema(
             f"SequentialStructured_{inputs.response_model_id}",
-            schema,
+            filter_schema_for_ai(schema),
         )
 
         checkpoint = getattr(self.context, "checkpoint", None) or {}

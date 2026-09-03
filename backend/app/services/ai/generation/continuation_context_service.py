@@ -155,11 +155,15 @@ def enrich_continuation_context_info(session: Session, request: ContinuationRequ
         request.context_info,
         structured_facts or assembled.facts_subgraph,
     )
+    bible_text = (assembled.bible_context or {}).get("text") if isinstance(assembled.bible_context, dict) else None
+    if bible_text and "[Novel Bible]" not in merged_context:
+        merged_context = f"{merged_context}\n\n[Novel Bible]\n{bible_text}" if merged_context else f"[Novel Bible]\n{bible_text}"
     logger.debug(
-        "[Continuation context] facts subgraph auto-assembly complete project_id={} participants={} facts_len={} structured={}",
+        "[Continuation context] facts subgraph auto-assembly complete project_id={} participants={} facts_len={} structured={} bible_len={}",
         request.project_id,
         len(participants),
         len(structured_facts or assembled.facts_subgraph or ""),
         bool(structured_facts),
+        len(bible_text or ""),
     )
     return merged_context

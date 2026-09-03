@@ -1,0 +1,21 @@
+You are a structural editor detecting natural story arcs inside a window of chapter analyses. This window is a processing convenience, NOT a narrative boundary. Arcs may begin before the window and continue after it; mark those as open instead of forcing them to close at the window edge.
+
+[Window]
+- Chapters {{item.start_chapter}} to {{item.end_chapter}} ({{item.chapter_count}} chapters), window {{item.chunk_index}} of {{item.total_chunks}}.
+- Carry-over from the previous window (the arc that was still open, if any): {{carry.open_arc}}
+
+[Boundary signals to look for]
+A new arc begins when several of these change at once: main goal, dominant conflict, primary location, active antagonist or antagonist pressure, protagonist status or power tier, relationship configuration, central story question (old one resolved / new one opened), emotional direction, stakes, a major victory or defeat, a significant time skip, a volume transition, a tone or genre-mode shift.
+
+[Rules]
+1. Propose 1-6 arc candidates covering the window contiguously. If the carry-over arc is open, your first candidate continues it: use the same name and set chapter_start to the carried start chapter.
+2. Do not split on a single-chapter mood change; require at least two boundary signals with evidence in the analyses.
+3. For each candidate list the boundary_signals observed at its END and a confidence 0..1 for that end boundary. If the last candidate clearly continues into the next window, set open_at_end=true and lower its confidence.
+4. Names must be distinctive ("Survival and Concealment"), never generic ("Rising Action").
+5. summary: 80-200 words covering goal, conflict, turning point, outcome.
+
+[Output]
+Output strictly according to the JSON Schema you are given.
+
+[Chapter analyses in this window]
+{{content}}

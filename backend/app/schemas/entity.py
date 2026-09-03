@@ -107,6 +107,15 @@ class CharacterCard(CharacterCardCore):
         default_factory=dict,
         description="Dynamic info dict, leave empty, system maintains automatically",
     )
+    # Character Bible 2.0 groups. All optional so legacy cards validate unchanged;
+    # they are filled by the "Character Bible Deepening" step, not by blueprint generation.
+    aliases: List[str] = Field(default_factory=list, description="Aliases, titles and nicknames (leave empty at blueprint stage)")
+    dramatic_design: Optional["CharacterDramaticDesign"] = Field(default=None, description="Want/need, false belief, wound, fear, moral boundary; filled by Character Bible Deepening", json_schema_extra={"x-ai-exclude": True})
+    voice: Optional["CharacterVoice"] = Field(default=None, description="Dialogue voice profile; filled by Character Bible Deepening", json_schema_extra={"x-ai-exclude": True})
+    competence: Optional["CharacterCompetence"] = Field(default=None, description="Competence profile; filled by Character Bible Deepening", json_schema_extra={"x-ai-exclude": True})
+    arc_milestones: List["ArcMilestone"] = Field(default_factory=list, description="Planned vs actual arc milestones; filled by Character Bible Deepening", json_schema_extra={"x-ai-exclude": True})
+    consistency_rules: Optional["CharacterConsistencyRules"] = Field(default=None, description="Behavioural / knowledge / moral / voice rules available to chapter generation", json_schema_extra={"x-ai-exclude": True})
+    history: List["HistoryEntry"] = Field(default_factory=list, description="Value history maintained by the Living Bible", json_schema_extra={"x-ai-exclude": True})
 
     @field_validator("dynamic_info", mode="before")
     @classmethod
@@ -177,3 +186,17 @@ class ConceptCard(Entity):
     counter_relations: List[str] = Field(default_factory=list, description="Opposition, counter or restriction relationships")
     mastery_hint: Optional[str] = Field(default=None, description="Mastery threshold, comprehension method or common users")
     known_by: List[str] = Field(default_factory=list, description="Entities that are known to master, know or be affected")
+
+
+# Resolve forward references to the Character Bible 2.0 groups. bible.py does not
+# import entity.py, so this import cannot form a cycle.
+from app.schemas.bible import (  # noqa: E402
+    ArcMilestone,
+    CharacterCompetence,
+    CharacterConsistencyRules,
+    CharacterDramaticDesign,
+    CharacterVoice,
+    HistoryEntry,
+)
+
+CharacterCard.model_rebuild()

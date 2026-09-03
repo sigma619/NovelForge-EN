@@ -1,0 +1,26 @@
+You are a narrative systems analyst. From the reconstructed Bible, stage structure and chapter analyses of a novel, identify its Narrative Genome: the recurring high-level mechanisms that make it work and that a different writer could learn from WITHOUT copying content.
+
+[Dimensions to cover]
+protagonist_engine, conflict_engine, escalation_engine, reward_engine, progression_loop, mystery_engine, relationship_engine, world_expansion_loop, chapter_hook_engine, antagonist_pattern, arc_length_pattern, reveal_frequency, tension_release_pattern, character_retention_engine. Skip a dimension only if the book genuinely lacks it; say so in genome_thinking.
+
+[Rules for each pattern]
+1. description: mechanism-level. Bad: "the author uses satisfying reversals". Good: "the protagonist enters a restricted social system, discovers an unwritten rule, exploits a conflict between higher-status participants, and gains limited status while creating a stronger enemy".
+2. typical_sequence: 4-9 ordered steps that recur.
+3. average_cycle_chapters: measured from the stage structure and chapter analyses (e.g. "6-9").
+4. conditions: when the pattern is deployed; variations: how it varies to avoid monotony.
+5. evidence: at least 3 chapter references per pattern.
+6. why_it_works: the reader psychology it serves.
+7. risks: how the pattern fails when overused (e.g. "repeating public humiliation makes antagonists appear stupid").
+8. transferable_abstraction: one paragraph a writer could apply to a different genre and setting. It must not contain names, places, terminology or specific events from the source.
+
+[Output]
+Output strictly according to the JSON Schema you are given. Set source_title to "$source_title".
+
+[Stage structure]
+$stages
+
+[Reconstructed Bible digest]
+$bible_digest
+
+[Chapter analyses digest]
+$analyses_digest

@@ -14,6 +14,39 @@ from app.schemas.response_registry import RESPONSE_MODEL_MAP
 from .registry import initializer
 
 
+# Card types whose stored schema is upgraded additively on startup: new top-level
+# properties and $defs from the code model are appended, but user edits to existing
+# fields are kept. This is how legacy Character Cards gain the Bible 2.0 groups
+# without BOOTSTRAP_OVERWRITE_CARD_SCHEMAS.
+ADDITIVE_SCHEMA_UPGRADE_TYPES = {"Character Card"}
+
+
+def _merge_schema_additively(existing: Dict[str, Any], incoming: Dict[str, Any]) -> Dict[str, Any] | None:
+    if not isinstance(existing, dict) or not isinstance(incoming, dict):
+        return None
+    existing_props = existing.get("properties")
+    incoming_props = incoming.get("properties")
+    if not isinstance(existing_props, dict) or not isinstance(incoming_props, dict):
+        return None
+    changed = False
+    merged = dict(existing)
+    merged_props = dict(existing_props)
+    for key, prop_schema in incoming_props.items():
+        if key not in merged_props:
+            merged_props[key] = prop_schema
+            changed = True
+    merged["properties"] = merged_props
+    incoming_defs = incoming.get("$defs") or {}
+    if isinstance(incoming_defs, dict) and incoming_defs:
+        merged_defs = dict(existing.get("$defs") or {})
+        for key, def_schema in incoming_defs.items():
+            if key not in merged_defs:
+                merged_defs[key] = def_schema
+                changed = True
+        merged["$defs"] = merged_defs
+    return merged if changed else None
+
+
 @initializer(name="Card Types", order=20)
 def create_default_card_types(session: Session) -> None:
     """Initialize default card types
@@ -134,6 +167,86 @@ def create_default_card_types(session: Session) -> None:
         "Item Card": {"default_ai_context_template": None, "is_ai_enabled": False},
         "Concept Card": {"default_ai_context_template": None, "is_ai_enabled": False},
         "Folder": {"is_singleton": False, "is_ai_enabled": False, "default_ai_context_template": None},
+
+        # ---------------- Novel Bible 2.0 (Novel Intelligence Studio) ----------------
+        # Foundation layer: singletons that every later generation reads.
+        "Story Foundation": {
+            "is_singleton": True,
+            "description": "Premise engine + genre contract with stress test and premise variants",
+            "default_ai_context_template": (
+                "Work Tags: @Work Tags.content\n"
+                "Special Ability: @Special Ability.content.special_abilities\n"
+                "One Sentence Summary: @One Sentence Summary.content.one_sentence\n"
+                "Story Outline: @Story Outline.content.overview\n"
+                "Raw idea / user notes: @self.content.raw_idea\n"
+            ),
+        },
+        "Reader Contract": {
+            "is_singleton": True,
+            "description": "What the story explicitly promises readers: fantasy, rewards, cadence, violations",
+            "default_ai_context_template": (
+                "Work Tags: @Work Tags.content\n"
+                "Story Foundation: @Story Foundation.content.{core_premise,story_promise,reader_fantasy,central_dramatic_question,unique_mechanism,emotional_core,expected_ending_experience,genre}\n"
+            ),
+        },
+        "Theme Map": {
+            "is_singleton": True,
+            "description": "Theme as a dramatic argument tied to arcs, decisions and costs",
+            "default_ai_context_template": (
+                "Story Foundation: @Story Foundation.content.{core_premise,central_dramatic_question,thematic_argument,counter_argument,emotional_core,protagonist,main_opposition}\n"
+                "Reader Contract: @Reader Contract.content.{primary_fantasy,primary_emotional_reward,expected_ending}\n"
+                "Character Cards: @type:Character Card[previous:global].{content.name,content.role_type,content.core_drive,content.character_arc}\n"
+            ),
+        },
+        "Power System": {
+            "is_singleton": False,
+            "description": "Structured power/magic/tech system with exploit stress tests",
+            "default_ai_context_template": (
+                "Work Tags: @Work Tags.content\n"
+                "Special Ability: @Special Ability.content.special_abilities\n"
+                "Worldview Setting: @Worldview Setting.content.world_view\n"
+                "Story Foundation: @Story Foundation.content.{core_premise,unique_mechanism,stakes,escalation_potential}\n"
+                "Concept Cards: @type:Concept Card[previous:global].{content.name,content.category,content.rule_definition,content.cost}\n"
+            ),
+        },
+        "Style Profile": {
+            "is_singleton": True,
+            "description": "Measurable narrative voice profile used by chapter generation and review",
+            "default_ai_context_template": (
+                "Work Tags: @Work Tags.content\n"
+                "Story Foundation: @Story Foundation.content.{core_premise,emotional_core,genre}\n"
+                "Reader Contract: @Reader Contract.content.{expected_tone,primary_emotional_reward}\n"
+            ),
+        },
+        # Narrative architecture layer: planning card that fans out into ledgers.
+        "Narrative Architecture": {
+            "is_singleton": True,
+            "description": "Planning card: plot threads, promises, secrets, timeline and relationship arcs; fans out into ledger cards on save",
+            "default_ai_context_template": (
+                "Story Foundation: @Story Foundation.content.{core_premise,central_dramatic_question,protagonist_goal,main_opposition,stakes,unique_mechanism,escalation_potential}\n"
+                "Reader Contract: @Reader Contract.content\n"
+                "Theme Map: @Theme Map.content.{theme_question,protagonist_initial_belief,antagonist_belief,planned_movement,final_answer}\n"
+                "Story Outline: @Story Outline.content.overview\n"
+                "Worldview Setting: @Worldview Setting.content.world_view\n"
+                "Character Cards: @type:Character Card[previous:global].{content.name,content.role_type,content.description,content.core_drive,content.character_arc,content.dramatic_design}\n"
+                "Organization Cards: @type:Organization Card[previous:global].{content.name,content.description,content.relationship}\n"
+                "Total volumes: @Core Blueprint.content.volume_count\n"
+            ),
+        },
+        # Ledger card types (many per project). Not AI-generated one-by-one; created by
+        # the architecture fan-out workflow, the Living Bible or the reverse-engineering lab.
+        "Plot Thread": {"is_singleton": False, "is_ai_enabled": False, "description": "Trackable plot thread with milestones, urgency and neglect detection", "default_ai_context_template": None},
+        "Promise Payoff": {"is_singleton": False, "is_ai_enabled": False, "description": "Promise / setup / payoff ledger entry", "default_ai_context_template": None},
+        "Knowledge Fact": {"is_singleton": False, "is_ai_enabled": False, "description": "Information-reveal matrix row: who knows what and when", "default_ai_context_template": None},
+        "Timeline Event": {"is_singleton": False, "is_ai_enabled": False, "description": "Timeline and causality event", "default_ai_context_template": None},
+        "Relationship Arc": {"is_singleton": False, "is_ai_enabled": False, "description": "Evolving relationship state between two characters", "default_ai_context_template": None},
+        "World Rule": {"is_singleton": False, "is_ai_enabled": False, "description": "One world rule with exceptions, costs and known-by list", "default_ai_context_template": None},
+        # Reverse-engineering lab outputs.
+        "Chapter Analysis": {"is_singleton": False, "is_ai_enabled": False, "description": "Structured analysis of one chapter of an imported novel", "default_ai_context_template": None},
+        "Story Structure Map": {"is_singleton": False, "is_ai_enabled": False, "description": "Globally reconciled stage structure of an analysed novel", "default_ai_context_template": None},
+        "Emotional Rhythm": {"is_singleton": False, "is_ai_enabled": False, "description": "Chapter-level emotional values and reader rewards", "default_ai_context_template": None},
+        "Narrative Genome": {"is_singleton": False, "is_ai_enabled": False, "description": "Reusable story mechanisms extracted from an analysed novel", "default_ai_context_template": None},
+        "Originality Transformation": {"is_singleton": False, "is_ai_enabled": False, "description": "Original premise candidates derived from abstract patterns with similarity review", "default_ai_context_template": None},
     }
 
     # Default AI parameter presets per type (does not include llm_config_id)
@@ -154,6 +267,24 @@ def create_default_card_types(session: Session) -> None:
         "Organization Card": {"prompt_name": "Relation Extraction", "temperature": 0.6, "max_tokens": 4096, "timeout": 120},
         "Item Card": None,
         "Concept Card": None,
+        # Novel Bible 2.0
+        "Story Foundation": {"prompt_name": "Story Foundation", "temperature": 0.7, "max_tokens": 8192, "timeout": 180},
+        "Reader Contract": {"prompt_name": "Reader Contract", "temperature": 0.6, "max_tokens": 4096, "timeout": 120},
+        "Theme Map": {"prompt_name": "Theme Map", "temperature": 0.7, "max_tokens": 4096, "timeout": 120},
+        "Power System": {"prompt_name": "Power System", "temperature": 0.6, "max_tokens": 8192, "timeout": 180},
+        "Style Profile": {"prompt_name": "Style Profile", "temperature": 0.6, "max_tokens": 4096, "timeout": 120},
+        "Narrative Architecture": {"prompt_name": "Narrative Architecture", "temperature": 0.7, "max_tokens": 12000, "timeout": 240},
+        "Plot Thread": None,
+        "Promise Payoff": None,
+        "Knowledge Fact": None,
+        "Timeline Event": None,
+        "Relationship Arc": None,
+        "World Rule": None,
+        "Chapter Analysis": None,
+        "Story Structure Map": None,
+        "Emotional Rhythm": None,
+        "Narrative Genome": None,
+        "Originality Transformation": None,
     }
 
     # Mapping from type name to built-in response model (used directly to generate json_schema)
@@ -177,6 +308,24 @@ def create_default_card_types(session: Session) -> None:
         "Item Card": "ItemCard",
         "Concept Card": "ConceptCard",
         "Folder": "Text",
+        # Novel Bible 2.0
+        "Story Foundation": "StoryFoundation",
+        "Reader Contract": "ReaderContract",
+        "Theme Map": "ThemeMap",
+        "Power System": "PowerSystem",
+        "Style Profile": "StyleProfile",
+        "Narrative Architecture": "NarrativeArchitecture",
+        "Plot Thread": "PlotThread",
+        "Promise Payoff": "PromisePayoff",
+        "Knowledge Fact": "KnowledgeFact",
+        "Timeline Event": "TimelineEvent",
+        "Relationship Arc": "RelationshipArc",
+        "World Rule": "WorldRule",
+        "Chapter Analysis": "ChapterAnalysis",
+        "Story Structure Map": "StoryStructureMap",
+        "Emotional Rhythm": "EmotionalRhythm",
+        "Narrative Genome": "NarrativeGenome",
+        "Originality Transformation": "OriginalityTransformation",
     }
 
     overwrite_card_schemas = settings.bootstrap.should_overwrite_card_schemas
@@ -227,6 +376,11 @@ def create_default_card_types(session: Session) -> None:
                     schema = model_class.model_json_schema(ref_template="#/$defs/{model}")
                     if ct.json_schema is None or overwrite_card_schemas:
                         ct.json_schema = schema
+                    elif name in ADDITIVE_SCHEMA_UPGRADE_TYPES:
+                        merged = _merge_schema_additively(ct.json_schema, schema)
+                        if merged is not None:
+                            ct.json_schema = merged
+                            logger.info(f"Additively upgraded schema for card type: {name}")
             except Exception:
                 pass
             # If ai_params is missing, fill from preset (don't overwrite user-set values)

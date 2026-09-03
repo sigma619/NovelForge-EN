@@ -1,0 +1,117 @@
+# Workflow: Project Creation - Novel Intelligence Studio
+# Function: When a project is created with the "bible" template, create the deep Novel Bible
+#           preparation chain: idea -> foundation -> reader contract -> theme -> world -> power
+#           system -> blueprint (characters) -> narrative architecture -> style profile.
+# Trigger: Automatically triggered when a project is created with template="bible"
+
+#@node(description="Trigger: listen for project creation with the Novel Intelligence Studio template")
+trigger = Trigger.ProjectCreated(template="bible")
+#</node>
+
+
+#@node(description="Work tags (genre, audience, narrative person)")
+tags = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Work Tags",
+    title="Work Tags"
+  )
+#</node>
+
+
+#@node(description="Special ability / unique mechanism seed")
+power = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Special Ability",
+    title="Special Ability"
+  )
+#</node>
+
+
+#@node(description="Story Foundation: premise engine, genre contract, stress test, premise variants")
+foundation = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Story Foundation",
+    title="Story Foundation"
+  )
+#</node>
+
+
+#@node(description="Reader Contract: promised fantasy, reward cadence, violations")
+contract = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Reader Contract",
+    title="Reader Contract"
+  )
+#</node>
+
+
+#@node(description="One Sentence Summary (kept for compatibility with existing outline generation)")
+one_sentence = Card.Create(
+    project_id=trigger.project_id,
+    card_type="One Sentence Summary",
+    title="One Sentence Summary"
+  )
+#</node>
+
+
+#@node(description="Story Outline")
+outline = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Story Outline",
+    title="Story Outline"
+  )
+#</node>
+
+
+#@node(description="Worldview Setting (organizations fan out on save)")
+world = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Worldview Setting",
+    title="Worldview Setting"
+  )
+#</node>
+
+
+#@node(description="Power System with exploit stress test")
+power_system = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Power System",
+    title="Power System"
+  )
+#</node>
+
+
+#@node(description="Core Blueprint (characters, scenes and volume count fan out on save)")
+blueprint = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Core Blueprint",
+    title="Core Blueprint"
+  )
+#</node>
+
+
+#@node(description="Theme Map: theme as a dramatic argument")
+theme = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Theme Map",
+    title="Theme Map"
+  )
+#</node>
+
+
+#@node(description="Narrative Architecture: threads, promises, secrets, timeline, relationships (fan out on save)")
+architecture = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Narrative Architecture",
+    title="Narrative Architecture"
+  )
+#</node>
+
+
+#@node(description="Style Profile: measurable voice constraints for generation and review")
+style = Card.Create(
+    project_id=trigger.project_id,
+    card_type="Style Profile",
+    title="Style Profile"
+  )
+#</node>

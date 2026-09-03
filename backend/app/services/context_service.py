@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from loguru import logger
 from sqlmodel import Session, select
 
 from app.db.models import Card
@@ -28,11 +29,16 @@ class AssembledContext:
 	facts_subgraph: str
 	budget_stats: Dict[str, Any]
 	facts_structured: Optional[Dict[str, Any]] = None
+	# Compiled Novel Bible slice (see services/bible/context_compiler.py)
+	bible_context: Optional[Dict[str, Any]] = None
 
 	def to_system_prompt_block(self) -> str:
 		parts: List[str] = []
 		if self.facts_subgraph:
 			parts.append(f"[Facts Subgraph]\n{self.facts_subgraph}")
+		bible_text = (self.bible_context or {}).get("text") if isinstance(self.bible_context, dict) else None
+		if bible_text:
+			parts.append(f"[Novel Bible]\n{bible_text}")
 		return "\n\n".join(parts)
 
 
@@ -148,6 +154,7 @@ def _build_concept_summaries(session: Session, project_id: Optional[int], partic
 
 def assemble_context(session: Session, params: ContextAssembleParams) -> AssembledContext:
 	facts_quota = 5000
+	bible_quota = 6000
 
 	eff_participants: List[str] = list(params.participants or [])
 	participant_set = {name for name in eff_participants if name}
@@ -227,8 +234,24 @@ def assemble_context(session: Session, params: ContextAssembleParams) -> Assembl
 
 	facts = truncate_text(facts_text, facts_quota, suffix="\n...[truncated]")
 
+	bible_context: Optional[Dict[str, Any]] = None
+	if params.project_id:
+		try:
+			from app.services.bible.context_compiler import ContextCompiler
+			compiled = ContextCompiler(session).compile(
+				project_id=params.project_id,
+				chapter_number=params.chapter_number,
+				participants=eff_participants,
+				budget_chars=bible_quota,
+			)
+			if compiled.blocks or compiled.prohibited:
+				bible_context = compiled.as_dict()
+		except Exception as exc:
+			logger.warning("[Context] Bible context compilation failed: {}", exc)
+
 	return AssembledContext(
 		facts_subgraph=facts,
-		budget_stats={},
+		budget_stats={"facts_quota": facts_quota, "bible_quota": bible_quota, "bible_used": (bible_context or {}).get("used_chars", 0)},
 		facts_structured=facts_structured,
+		bible_context=bible_context,
 	)
