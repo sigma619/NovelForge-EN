@@ -79,6 +79,13 @@ In long-form writing, the greatest challenges are maintaining consistency, ensur
 <a id="core-features"></a>
 ## ✨ Core Features
 
+*   **📖 Novel Intelligence Studio (Novel Bible 2.0)**
+    *   A dedicated **Novel Bible** tab in the editor. *Create Bible* builds a deep, evidence-backed Bible before you write (Story Foundation, Reader Contract, Theme Map, Power System, Style Profile, Narrative Architecture, plus ledgers for Plot Threads, Promises & Payoffs, Knowledge Facts, Relationship Arcs, World Rules and Timeline Events). Every fact carries a truth status (`canon / believed / planned / inferred / disputed / obsolete`), confidence, and chapter evidence.
+    *   **Living Bible**: after writing a chapter, "Propose Bible updates" extracts changes as a reviewable proposal — accept, reject, edit, postpone, mark as plan-not-canon, intentional contradiction, or unreliable narration. Nothing is written silently; accepted changes keep a value history.
+    *   **Context Compiler**: chapter generation automatically receives the minimum relevant Bible slice (active threads, due promises, relationship state, POV knowledge) with selection reasons, and prohibits knowledge the POV character cannot yet have.
+    *   **Deterministic audits**: neglected threads, overdue promises, disputed facts, reward drought, repeated scene functions — surfaced in an Audits panel with card links.
+    *   *Extract Bible*: the **Narrative Reverse-Engineering Lab** imports a TXT/Markdown/EPUB/DOCX manuscript you have the right to analyse, previews chapter detection (split/merge/rename/exclude corrections), then a workflow runs chapter analysis → local arc detection → global stage reconciliation → entity resolution → Bible reconstruction → emotional rhythm → **Narrative Genome**, with an **Originality Transformation** prompt to derive original premises. The legacy Book Teardown Workflow remains available.
+
 *   **📚 Schema-driven card creation**
     *   Each card type can define a structure (Schema). AI generation is validated against that structure, reducing "looks usable but falls apart in practice" output.
 
@@ -114,6 +121,23 @@ In long-form writing, the greatest challenges are maintaining consistency, ensur
 <a id="changelog"></a>
 
 ## 📅 Changelog
+<details>
+<summary>v0.10.0 — Novel Intelligence Studio</summary>
+
+- **New "Novel Bible" tab** in the editor with *Create Bible* and *Extract Bible* modes.
+- **Bible 2.0 card types**: Story Foundation, Reader Contract, Theme Map, Power System, Style Profile, Narrative Architecture, Plot Thread, Promise Payoff, Knowledge Fact, Timeline Event, Relationship Arc, World Rule, Chapter Analysis, Story Structure Map, Emotional Rhythm, Narrative Genome, Originality Transformation. All fields carry truth status, confidence and chapter evidence.
+- **Character Card deepening**: optional `aliases`, `dramatic_design`, `voice`, `competence`, `arc_milestones`, `consistency_rules` and `history` fields (existing cards keep working; a one-click *Deepen* action fills them with AI).
+- **Living Bible**: "Propose Bible updates" in the chapter Extract panel produces a reviewable proposal (accept / reject / edit / postpone / mark as plan / intentional contradiction / unreliable narration). Accepted changes are applied with a value history; nothing is written silently.
+- **Context Compiler**: chapter generation and `/api/context/assemble` receive the minimum relevant Bible slice with selection reasons and a list of knowledge the POV character must not yet reveal.
+- **Audits**: neglected threads, overdue promises, disputed facts, reward drought, repeated scene functions.
+- **Relationship Matrix** (trust / affection / fear / dependency / resentment with milestones) and **Knowledge Matrix** (who knows / suspects / holds a false belief about each fact).
+- **Narrative Reverse-Engineering Lab**: import TXT / Markdown / EPUB / DOCX manuscripts with chapter-detection preview and corrections, then run the new `Narrative Reverse-Engineering Lab` workflow (chapter analysis → local arcs → global stage reconciliation → entity resolution → Bible reconstruction → emotional rhythm → Narrative Genome) and the `Lab - Originality Transformation` prompt. The legacy Book Teardown Workflow is unchanged.
+- New project template **Project Creation - Novel Intelligence Studio** and the **Narrative Architecture** fan-out workflow.
+- Workflow AI nodes now honor `x-ai-exclude`, so system-only fields never reach the model.
+- Backend test suite added (`backend/tests`).
+
+</details>
+
 <details>
 <summary>v0.9.6</summary>
 
