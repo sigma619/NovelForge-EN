@@ -1,0 +1,434 @@
+# Workflow: Narrative Reverse-Engineering Lab
+# Goal: convert an imported novel into an evidence-backed structured Novel Bible.
+# Input: chapters imported through the Lab import wizard (stored as "Chapter Analysis" cards
+#        under the "Imported Manuscript" folder). No local paths, no downloading.
+# Pipeline:
+#   chapter text -> structured ChapterAnalysis (scenes, events, state changes, setups/payoffs, emotion)
+#   -> local arc candidates per processing window (carry the open arc forward)
+#   -> global stage reconciliation (windows are never narrative boundaries)
+#   -> entity resolution (aliases -> canonical entities)
+#   -> Bible reconstruction (threads, promises, secrets, timeline, relationships) -> ledger cards
+#   -> emotional rhythm -> Narrative Genome
+# The legacy "Book Teardown Workflow" is kept unchanged for comparison.
+
+#@node(description="Select the target project (must contain an imported manuscript)")
+project = Logic.SelectProject(project_id=1)
+#</node>
+
+
+#@node(description="Select the model used for every analysis step")
+llm = Logic.SelectLLM(llm_config_id=1)
+#</node>
+
+
+#@node(description="Runtime parameters: window size for arc detection, stage cap, concurrency")
+settings = Logic.Expression(
+    expression="{'llm_config_id': llm.llm_config_id, 'window_size': 40, 'max_stage_count': 24, 'analysis_concurrency': 12}"
+  )
+#</node>
+
+
+#@node(description="Load the imported manuscript chapters (Chapter Analysis cards holding source_text)")
+chapter_cards = Card.Query(
+    project_id=project.project_id,
+    card_type="Chapter Analysis",
+    limit=5000
+  )
+#</node>
+
+
+#@node(description="Build batch items: content = chapter source text, plus chapter identity")
+chapter_items = Logic.Expression(
+    expression="lab_chapter_items(chapter_cards.cards)"
+  )
+#</node>
+
+
+#@node(description="Guard: the manuscript must be imported first")
+assert_imported = Logic.Assert(
+    condition="len(chapter_items.result) > 0",
+    message="No imported chapters found. Use Novel Intelligence Studio -> Extract Bible -> Import manuscript first."
+  )
+#</node>
+
+
+#@node(description="Load the structured chapter analysis prompt")
+analysis_prompt = Prompt.Load(prompt_id="Lab - Chapter Analysis")
+#</node>
+
+
+#@node(async=true, description="Structured analysis of every chapter (scenes, events, state changes, setups, payoffs, emotion, techniques, evidence)")
+analysis_results = AI.BatchStructured(
+    llm_config_id=settings.result.llm_config_id,
+    response_model_id="ChapterAnalysis",
+    prompt_template=analysis_prompt.text,
+    use_instruction_flow=False,
+    concurrency=settings.result.analysis_concurrency,
+    max_retries=3,
+    max_tokens=12000,
+    timeout=300,
+    items=chapter_items.result
+  )
+#</node>
+
+
+#@node(description="Wait for chapter analysis")
+wait_analysis = Logic.Wait(tasks=analysis_results)
+#</node>
+
+
+#@node(description="Merge analysis results back into per-chapter records")
+analysis_records = Logic.Expression(
+    expression="lab_analysis_records(analysis_results.results)"
+  )
+#</node>
+
+
+#@node(description="Write each analysis back into its Chapter Analysis card (keeps source_text, adds structure)")
+analysis_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Chapter Analysis",
+    title_template="{item.card_title}",
+    match_by="title",
+    items=analysis_records.result
+  )
+#</node>
+
+
+#@node(description="Processing windows for arc detection (a processing detail, not a story boundary)")
+windows = Logic.Expression(
+    expression="lab_windows(analysis_records.result, size=settings.result.window_size)"
+  )
+#</node>
+
+
+#@node(description="Load the local arc detection prompt")
+arc_prompt = Prompt.Load(prompt_id="Lab - Local Arc Detection")
+#</node>
+
+
+#@node(async=true, description="Detect arc candidates per window, carrying the open arc into the next window")
+arc_results = AI.SequentialStructured(
+    llm_config_id=settings.result.llm_config_id,
+    response_model_id="LocalArcPlan",
+    prompt_template=arc_prompt.text,
+    temperature=0.4,
+    max_tokens=8000,
+    timeout=240,
+    max_retries=3,
+    use_instruction_flow=False,
+    fail_soft=True,
+    initial_carry={"open_arc": "none"},
+    carry_extract_expr="lab_open_arc_carry(ai_result)",
+    items=windows.result
+  )
+#</node>
+
+
+#@node(description="Wait for arc detection")
+wait_arcs = Logic.Wait(tasks=arc_results)
+#</node>
+
+
+#@node(description="Flatten arc candidates across windows")
+arc_candidates = Logic.Expression(
+    expression="lab_arc_candidates(arc_results.results)"
+  )
+#</node>
+
+
+#@node(description="Load the global stage reconciliation prompt")
+stage_prompt = Prompt.Load(
+    prompt_id="Lab - Global Stage Reconciliation",
+    variables={
+      "total_chapters": "${len(analysis_records.result)}",
+      "max_stage_count": "${settings.result.max_stage_count}",
+      "arc_candidates": "${json_stringify(arc_candidates.result)}"
+    }
+  )
+#</node>
+
+
+#@node(description="Reconcile arc candidates into the book's true stage structure")
+structure = AI.StructuredGenerate(
+    llm_config_id=settings.result.llm_config_id,
+    response_model_id="StoryStructureMap",
+    user_prompt=stage_prompt.text,
+    temperature=0.3,
+    max_tokens=16000,
+    timeout=300,
+    max_retry=3
+  )
+#</node>
+
+
+#@node(description="Normalize stage ranges so chapters 1..N are covered contiguously")
+stages_normalized = Logic.Expression(
+    expression="normalize_ranges(structure.data.stages or [], start=1, end=len(analysis_records.result))"
+  )
+#</node>
+
+
+#@node(description="Save the Story Structure Map card (stages with boundary reasons and confidence)")
+structure_card = Card.Create(
+    project_id=project.project_id,
+    card_type="Story Structure Map",
+    title="Story Structure Map",
+    content={
+      "reconciliation_thinking": "{structure.data.reconciliation_thinking}",
+      "stages": "{stages_normalized.result}",
+      "volume_hints": "{structure.data.volume_hints}"
+    }
+  )
+#</node>
+
+
+#@node(description="Aggregate participant mentions per chapter")
+mentions = Logic.Expression(
+    expression="lab_entity_mentions(analysis_records.result)"
+  )
+#</node>
+
+
+#@node(description="Load the entity resolution prompt")
+entity_prompt = Prompt.Load(
+    prompt_id="Lab - Entity Resolution",
+    variables={
+      "mentions": "${mentions.result}"
+    }
+  )
+#</node>
+
+
+#@node(description="Resolve aliases into canonical entities (low-confidence merges are flagged for review)")
+entities = AI.StructuredGenerate(
+    llm_config_id=settings.result.llm_config_id,
+    response_model_id="EntityResolutionPlan",
+    user_prompt=entity_prompt.text,
+    temperature=0.2,
+    max_tokens=12000,
+    timeout=300,
+    max_retry=3
+  )
+#</node>
+
+
+#@node(description="Character entities -> Character Cards (inferred, with aliases)")
+character_items = Logic.Expression(
+    expression="[{'name': e.canonical, 'entity_type': 'character', 'life_span': 'Long Term', 'role_type': 'Supporting Character', 'born_scene': '', 'description': e.note or '', 'personality': '', 'core_drive': '', 'character_arc': '', 'aliases': e.aliases or [], 'history': []} for e in (entities.data.entities or []) if e.entity_type == 'character' and e.confidence >= 0.6]"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Character Cards for resolved characters")
+character_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Character Card",
+    title_template="{item.name}",
+    match_by="title",
+    items=character_items.result
+  )
+#</node>
+
+
+#@node(description="Organization entities -> Organization Cards")
+organization_items = Logic.Expression(
+    expression="[{'name': e.canonical, 'entity_type': 'organization', 'life_span': 'Long Term', 'description': e.note or '', 'relationship': [], 'dynamic_state': []} for e in (entities.data.entities or []) if e.entity_type == 'organization' and e.confidence >= 0.6]"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Organization Cards")
+organization_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Organization Card",
+    title_template="{item.name}",
+    match_by="title",
+    items=organization_items.result
+  )
+#</node>
+
+
+#@node(description="Location entities -> Scene Cards")
+scene_items = Logic.Expression(
+    expression="[{'name': e.canonical, 'entity_type': 'scene', 'life_span': 'Long Term', 'description': e.note or '', 'function_in_story': '', 'dynamic_state': []} for e in (entities.data.entities or []) if e.entity_type == 'scene' and e.confidence >= 0.6]"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Scene Cards")
+scene_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Scene Card",
+    title_template="{item.name}",
+    match_by="title",
+    items=scene_items.result
+  )
+#</node>
+
+
+#@node(description="Compact digest of all chapter analyses for Bible reconstruction")
+analyses_digest = Logic.Expression(
+    expression="lab_analysis_digest(analysis_records.result, max_chars=120000, per_chapter_chars=600)"
+  )
+#</node>
+
+
+#@node(description="Load the Bible reconstruction prompt")
+bible_prompt = Prompt.Load(
+    prompt_id="Lab - Bible Reconstruction",
+    variables={
+      "total_chapters": "${len(analysis_records.result)}",
+      "entities": "${json_stringify(entities.data.entities)}",
+      "stages": "${json_stringify(stages_normalized.result)}",
+      "analyses_digest": "${analyses_digest.result}"
+    }
+  )
+#</node>
+
+
+#@node(description="Reconstruct plot threads, promises, secrets, timeline and relationships with evidence")
+bible = AI.StructuredGenerate(
+    llm_config_id=settings.result.llm_config_id,
+    response_model_id="NarrativeArchitecture",
+    user_prompt=bible_prompt.text,
+    temperature=0.3,
+    max_tokens=20000,
+    timeout=420,
+    max_retry=3
+  )
+#</node>
+
+
+#@node(async=true, description="Plot Thread ledger cards")
+thread_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Plot Thread",
+    title_template="{item.name}",
+    match_by="title",
+    items=bible.data.plot_threads
+  )
+#</node>
+
+
+#@node(async=true, description="Promise / Payoff ledger cards")
+promise_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Promise Payoff",
+    title_template="{item.setup}",
+    match_by="title",
+    items=bible.data.promises
+  )
+#</node>
+
+
+#@node(async=true, description="Knowledge Fact ledger cards")
+fact_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Knowledge Fact",
+    title_template="{item.fact}",
+    match_by="title",
+    items=bible.data.knowledge_facts
+  )
+#</node>
+
+
+#@node(async=true, description="Timeline Event cards")
+event_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Timeline Event",
+    title_template="{item.title}",
+    match_by="title",
+    items=bible.data.timeline_events
+  )
+#</node>
+
+
+#@node(description="Relationship arcs with canonical 'A ↔ B' titles")
+relationship_items = Logic.Expression(
+    expression="lab_relationship_items(bible.data.relationship_arcs)"
+  )
+#</node>
+
+
+#@node(async=true, description="Relationship Arc cards")
+relationship_cards = Card.BatchUpsert(
+    project_id=project.project_id,
+    card_type="Relationship Arc",
+    title_template="{item.pair_title}",
+    match_by="title",
+    items=relationship_items.result
+  )
+#</node>
+
+
+#@node(description="Emotional rhythm across the whole book")
+rhythm = Logic.Expression(
+    expression="lab_emotional_rhythm(analysis_records.result)"
+  )
+#</node>
+
+
+#@node(description="Save the Emotional Rhythm card")
+rhythm_card = Card.Create(
+    project_id=project.project_id,
+    card_type="Emotional Rhythm",
+    title="Emotional Rhythm",
+    content={
+      "chapters": "{rhythm.result.chapters}",
+      "observations": "{rhythm.result.observations}"
+    }
+  )
+#</node>
+
+
+#@node(description="Digest of the reconstructed Bible for genome extraction")
+bible_digest = Logic.Expression(
+    expression="lab_bible_digest(bible.data)"
+  )
+#</node>
+
+
+#@node(description="Load the Narrative Genome prompt")
+genome_prompt = Prompt.Load(
+    prompt_id="Lab - Narrative Genome",
+    variables={
+      "source_title": "${chapter_items.result[0].volume if chapter_items.result else 'Imported novel'}",
+      "stages": "${json_stringify(stages_normalized.result)}",
+      "bible_digest": "${bible_digest.result}",
+      "analyses_digest": "${lab_analysis_digest(analysis_records.result, max_chars=60000, per_chapter_chars=300)}"
+    }
+  )
+#</node>
+
+
+#@node(description="Extract the Narrative Genome (reusable mechanisms, evidence, risks, transferable abstractions)")
+genome = AI.StructuredGenerate(
+    llm_config_id=settings.result.llm_config_id,
+    response_model_id="NarrativeGenome",
+    user_prompt=genome_prompt.text,
+    temperature=0.4,
+    max_tokens=16000,
+    timeout=420,
+    max_retry=3
+  )
+#</node>
+
+
+#@node(description="Save the Narrative Genome card")
+genome_card = Card.Create(
+    project_id=project.project_id,
+    card_type="Narrative Genome",
+    title="Narrative Genome",
+    content={
+      "genome_thinking": "{genome.data.genome_thinking}",
+      "patterns": "{genome.data.patterns}",
+      "source_title": "{genome.data.source_title}"
+    }
+  )
+#</node>
+
+
+#@node(description="Wait for all ledger writes")
+wait_ledgers = Logic.Wait(tasks=[character_cards, organization_cards, scene_cards, thread_cards, promise_cards, fact_cards, event_cards, relationship_cards])
+#</node>

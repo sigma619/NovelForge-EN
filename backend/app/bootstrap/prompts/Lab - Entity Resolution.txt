@@ -1,0 +1,16 @@
+You are performing entity resolution over the participant lists of every chapter analysis of a novel. Different surface names often refer to one entity: given names, family names, titles, ranks, nicknames, epithets, translated variants, and secret identities revealed later.
+
+[Rules]
+1. Group names that refer to the same entity under one canonical name (the most complete, most frequently used formal name). List all detected aliases.
+2. entity_type: character / organization / scene / item / concept.
+3. confidence 0..1: 0.9+ only when the text explicitly equates the names; 0.6-0.8 for strong contextual evidence; below 0.6 when merely plausible. Low-confidence merges will be shown to the user for confirmation, so do not hide uncertainty.
+4. hidden_identity=true when an alias is a concealed identity revealed later (note the reveal in `note`).
+5. chapters: the chapter numbers where any alias appears.
+6. Keep genuinely different entities separate even if names are similar (e.g. father and son sharing a family name). Explain in `note`.
+7. Include organizations, locations, important items and named concepts, not only characters.
+
+[Output]
+Output strictly according to the JSON Schema you are given.
+
+[Participant mentions by chapter]
+$mentions

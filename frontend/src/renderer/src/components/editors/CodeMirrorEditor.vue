@@ -1227,6 +1227,7 @@ import {
 	applyMemoryPreview,
 	type ExtractPreviewResponse,
 } from '@renderer/api/memory'
+import { extractBibleUpdates } from '@renderer/api/bible'
 import { ArrowDown, ArrowUp, Document, MagicStick, CircleClose, Connection, List, Timer, Select, Loading, Search, Close } from '@element-plus/icons-vue'
 import AIPerCardParams from '../common/AIPerCardParams.vue'
 import ContinuationBudgetDialog, { type ContinuationWordControlMode } from './dialogs/ContinuationBudgetDialog.vue'
@@ -3626,6 +3627,40 @@ editorStore.setTriggerExtractItemState(async (opts) => {
 editorStore.setTriggerExtractConceptState(async (opts) => {
 	if (typeof opts?.llm_config_id === 'number') {
 		await extractMemoryByCode('concept_state', opts.llm_config_id, opts)
+	}
+})
+
+// Living Bible: analyse the chapter against the Bible and create a reviewable proposal.
+editorStore.setTriggerProposeBibleUpdates(async (opts) => {
+	if (typeof opts?.llm_config_id !== 'number') return
+	try {
+		const projectId = projectStore.currentProject?.id || (localCard as any).project_id
+		if (!projectId) { ElMessage.error(t('editor.projectIdNotFound')); return }
+		const text = getText() || ''
+		if (!text.trim()) { ElMessage.warning(t('bible.updates.noChapterText')); return }
+		const participants = extractParticipantsWithTypeForCurrentChapter().map(p => p.name)
+		const vol = (localCard as any)?.content?.volume_number ?? (props.contextParams as any)?.volume_number
+		const ch = (localCard as any)?.content?.chapter_number ?? (props.contextParams as any)?.chapter_number
+		const outlineText = (props.contextParams as any)?.extra_context_fn?.() || null
+		const runOptions = buildExtractRunOptions(opts, opts.llm_config_id)
+		const review = await extractBibleUpdates({
+			project_id: projectId,
+			llm_config_id: opts.llm_config_id,
+			text,
+			chapter_card_id: (props.card as any)?.id ?? null,
+			volume_number: vol ?? null,
+			chapter_number: ch ?? null,
+			participants,
+			outline_text: outlineText,
+			temperature: runOptions?.temperature ?? null,
+			max_tokens: runOptions?.max_tokens ?? null,
+			timeout: runOptions?.timeout ?? null,
+		})
+		ElMessage.success(t('bible.updates.proposeDone', { n: review.proposal.changes?.length || 0 }))
+		editorStore.setLastBibleReviewId(review.id)
+	} catch (e) {
+		console.error(e)
+		ElMessage.error(t('bible.updates.proposeFailed'))
 	}
 })
 

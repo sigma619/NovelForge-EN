@@ -58,6 +58,27 @@
 			<span>{{ t('panels.chapterTools.runningActionHint', { action: runningActionLabel }) }}</span>
 		</div>
 
+		<el-card class="tool-card tool-card-bible" shadow="never">
+			<template #header>
+				<div class="card-header">
+					<el-icon><Notebook /></el-icon>
+					<span>{{ t('bible.updates.title') }}</span>
+				</div>
+			</template>
+			<div class="card-body">
+				<p class="hint">{{ t('bible.updates.proposeHint') }}</p>
+				<el-button
+					type="primary"
+					class="action-button"
+					:loading="runningAction === 'bible_updates'"
+					:disabled="isBusy && runningAction !== 'bible_updates'"
+					@click="handleProposeBibleUpdates"
+				>
+					{{ t('bible.updates.proposeFromChapter') }}
+				</el-button>
+			</div>
+		</el-card>
+
 		<el-card class="tool-card" shadow="never">
 			<template #header>
 				<div class="card-header">
@@ -156,7 +177,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Box, Connection, Loading, Setting, User } from '@element-plus/icons-vue'
+import { Box, Connection, Loading, Notebook, Setting, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 import { getAIConfigOptions } from '@renderer/api/ai'
@@ -172,6 +193,7 @@ type ExtractionAction =
 	| 'organization_state'
 	| 'item_state'
 	| 'concept_state'
+	| 'bible_updates'
 
 interface ChapterExtractConfigState {
 	llm_config_id: number | null
@@ -216,6 +238,8 @@ const runningActionLabel = computed(() => {
 			return t('panels.chapterTools.extractItemState')
 		case 'concept_state':
 			return t('panels.chapterTools.extractConceptMastery')
+		case 'bible_updates':
+			return t('bible.updates.proposeFromChapter')
 		default:
 			return t('panels.chapterTools.extract')
 	}
@@ -348,6 +372,10 @@ async function handleExtractConceptState() {
 	await runExtraction('concept_state', options => editorStore.triggerExtractConceptState(options))
 }
 
+async function handleProposeBibleUpdates() {
+	await runExtraction('bible_updates', options => editorStore.triggerProposeBibleUpdates(options))
+}
+
 onMounted(async () => {
 	try {
 		const options = await getAIConfigOptions()
@@ -437,6 +465,17 @@ onMounted(async () => {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+}
+
+.tool-card-bible {
+	border-color: color-mix(in srgb, var(--el-color-primary) 35%, var(--el-border-color-light));
+}
+
+.hint {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--el-text-color-secondary);
 }
 
 .action-button {

@@ -169,6 +169,23 @@ class ForeshadowItem(SQLModel, table=True):
     resolved_at: Optional[datetime] = None
 
 
+# Living Bible: pending update proposals awaiting user review.
+# A first-class table (not a card) because proposals are transient review state
+# with per-change decisions, and must never be injected into generation context.
+class BibleUpdateReview(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    project_id: int = Field(foreign_key="project.id", index=True)
+    chapter_card_id: Optional[int] = Field(default=None, index=True)
+    volume_number: Optional[int] = None
+    chapter_number: Optional[int] = None
+    # pending | partially_applied | applied | dismissed
+    status: str = Field(default="pending", index=True)
+    proposal_json: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    decisions_json: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=datetime.now, nullable=False)
+    updated_at: datetime = Field(default_factory=datetime.now, nullable=False)
+
+
 # Knowledge base model
 class Knowledge(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

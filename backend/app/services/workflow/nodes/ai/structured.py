@@ -17,6 +17,7 @@ from app.services import prompt_service
 from app.services.ai.core.model_builder import build_model_from_json_schema
 from app.services.ai.core.llm_service import generate_structured
 from app.services.schema_service import compose_full_schema
+from app.utils.schema_utils import filter_schema_for_ai
 from app.db.models import CardType
 from app.schemas.response_registry import RESPONSE_MODEL_MAP
 from sqlmodel import select
@@ -114,7 +115,7 @@ class StructuredGenerateNode(BaseNode[StructuredGenerateInput, StructuredGenerat
         try:
             dynamic_output = build_model_from_json_schema(
                 f"WorkflowStructured_{inputs.response_model_id}",
-                full_schema,
+                filter_schema_for_ai(full_schema),
             )
             generated = await generate_structured(
                 session=session,

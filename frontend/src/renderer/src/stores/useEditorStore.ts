@@ -89,6 +89,10 @@ export const useEditorStore = defineStore('editor', () => {
   const triggerExtractConceptStateRef = ref<null | ((opts: ChapterExtractRunOptions) => Promise<void>)>(null)
   const triggerExtractSceneStateRef = ref<null | ((opts: ChapterExtractRunOptions) => Promise<void>)>(null)
   const triggerExtractOrganizationStateRef = ref<null | ((opts: ChapterExtractRunOptions) => Promise<void>)>(null)
+  // Callback to cross-component trigger "propose Bible updates" (Living Bible)
+  const triggerProposeBibleUpdatesRef = ref<null | ((opts: ChapterExtractRunOptions) => Promise<void>)>(null)
+  // Set when a Bible update review was created from the current chapter (Editor jumps to it)
+  const lastBibleReviewId = ref<number | null>(null)
 
   // Writing context sharing: volume/chapter number/title (for other panels to use)
   const currentVolumeNumber = ref<number | null>(null)
@@ -233,6 +237,20 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function setTriggerProposeBibleUpdates(fn: null | ((opts: ChapterExtractRunOptions) => Promise<void>)) {
+    triggerProposeBibleUpdatesRef.value = fn
+  }
+
+  async function triggerProposeBibleUpdates(opts: ChapterExtractRunOptions) {
+    if (triggerProposeBibleUpdatesRef.value) {
+      await triggerProposeBibleUpdatesRef.value(opts)
+    }
+  }
+
+  function setLastBibleReviewId(id: number | null) {
+    lastBibleReviewId.value = id
+  }
+
   function setTriggerExtractSceneState(fn: null | ((opts: ChapterExtractRunOptions) => Promise<void>)) {
     triggerExtractSceneStateRef.value = fn
   }
@@ -275,6 +293,8 @@ export const useEditorStore = defineStore('editor', () => {
     triggerExtractConceptStateRef.value = null
     triggerExtractSceneStateRef.value = null
     triggerExtractOrganizationStateRef.value = null
+    triggerProposeBibleUpdatesRef.value = null
+    lastBibleReviewId.value = null
     currentVolumeNumber.value = null
     currentChapterNumber.value = null
     currentChapterTitle.value = ''
@@ -329,6 +349,10 @@ export const useEditorStore = defineStore('editor', () => {
     triggerExtractSceneState,
     setTriggerExtractOrganizationState,
     triggerExtractOrganizationState,
+    setTriggerProposeBibleUpdates,
+    triggerProposeBibleUpdates,
+    lastBibleReviewId,
+    setLastBibleReviewId,
     setCurrentContextInfo,
     reset
   }

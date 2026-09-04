@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Dict, Any
 
@@ -14,6 +14,16 @@ from app.schemas.wizard import (
 )
 from app.schemas.entity import ConceptCard, ItemCard, OrganizationCard
 from app.schemas.workflow_models import BookStageChunkPlan, BookStageFinalPlan
+from app.schemas.bible import (
+	StoryFoundation, ReaderContract, ThemeMap, CharacterBibleDeepening,
+	RelationshipArc, WorldRule, PowerSystem,
+	PlotThread, PromisePayoff, KnowledgeFact, TimelineEvent, NarrativeArchitecture,
+	StyleProfile, EmotionalRhythm,
+	ChapterAnalysis, LocalArcPlan, StoryStructureMap, EntityResolutionPlan,
+	NarrativeGenome, OriginalityTransformation,
+	Evidence, HistoryEntry, SceneAnalysis, ChapterEmotion,
+)
+from app.schemas.bible_update import BibleUpdateProposal
 
 RESPONSE_MODEL_MAP: Dict[str, Any] = {
     "Text": Text,
@@ -42,4 +52,33 @@ RESPONSE_MODEL_MAP: Dict[str, Any] = {
 	# Workflow-specific structural models
 	'BookStageChunkPlan': BookStageChunkPlan,
 	'BookStageFinalPlan': BookStageFinalPlan,
+	# --- Novel Bible 2.0 ---
+	'StoryFoundation': StoryFoundation,
+	'ReaderContract': ReaderContract,
+	'ThemeMap': ThemeMap,
+	'CharacterBibleDeepening': CharacterBibleDeepening,
+	'RelationshipArc': RelationshipArc,
+	'WorldRule': WorldRule,
+	'PowerSystem': PowerSystem,
+	'PlotThread': PlotThread,
+	'PromisePayoff': PromisePayoff,
+	'KnowledgeFact': KnowledgeFact,
+	'TimelineEvent': TimelineEvent,
+	'NarrativeArchitecture': NarrativeArchitecture,
+	'StyleProfile': StyleProfile,
+	'EmotionalRhythm': EmotionalRhythm,
+	# --- Living Bible ---
+	'BibleUpdateProposal': BibleUpdateProposal,
+	# --- Reverse-engineering lab ---
+	'ChapterAnalysis': ChapterAnalysis,
+	'LocalArcPlan': LocalArcPlan,
+	'StoryStructureMap': StoryStructureMap,
+	'EntityResolutionPlan': EntityResolutionPlan,
+	'NarrativeGenome': NarrativeGenome,
+	'OriginalityTransformation': OriginalityTransformation,
+	# Nested types exported for frontend $ref resolution
+	'Evidence': Evidence,
+	'HistoryEntry': HistoryEntry,
+	'SceneAnalysis': SceneAnalysis,
+	'ChapterEmotion': ChapterEmotion,
 }

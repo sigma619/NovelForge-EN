@@ -46,10 +46,31 @@ class FactsStructured(BaseModel):
 	concept_summaries: List[ConceptSummary] = Field(default_factory=list, description="Concept summaries")
 
 
+class BibleContextBlock(BaseModel):
+	section: str
+	title: str
+	text: str
+	reason: str
+	truth_status: Optional[str] = None
+	confidence: Optional[float] = None
+	card_id: Optional[int] = None
+	priority: int = 50
+
+
+class BibleContext(BaseModel):
+	text: str = Field(default="", description="Compiled Bible slice as prompt text")
+	blocks: List[BibleContextBlock] = Field(default_factory=list, description="Selected blocks with selection reasons")
+	prohibited: List[str] = Field(default_factory=list, description="Facts the POV/reader must not learn yet")
+	budget_chars: int = 0
+	used_chars: int = 0
+	dropped: int = 0
+
+
 class AssembleContextResponse(BaseModel):
 	facts_subgraph: str = Field(default="", description="Text echo of the fact subgraph (optional, echo only)")
 	budget_stats: Dict[str, Any] = Field(default_factory=dict, description="Context word budget stats (may include nested parts dict)")
 	facts_structured: Optional[FactsStructured] = Field(default=None, description="Structured fact subgraph")
+	bible_context: Optional[BibleContext] = Field(default=None, description="Compiled Novel Bible slice for this chapter")
 
 
 class ContextSettingsModel(BaseModel):

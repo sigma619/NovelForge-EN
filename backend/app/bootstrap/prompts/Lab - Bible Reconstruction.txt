@@ -1,0 +1,22 @@
+You are reconstructing the structural Novel Bible of an existing novel from its chapter analyses and reconciled stage structure. You are NOT summarising the book; you are producing trackable ledger entries (plot threads, promise/payoff entries, knowledge facts, timeline events, relationship arcs) that a writer can study and audit.
+
+[Global facts]
+- Total chapters: $total_chapters
+- Canonical entities and aliases (use canonical names everywhere): $entities
+- Stage structure: $stages
+
+[Rules]
+1. Evidence first. Every entry has truth_status "inferred" unless explicitly stated on the page (then "canon" or "believed" for character claims). Attach evidence with chapter numbers taken from the analyses; quotes may be copied from analysis evidence but keep each <= 200 characters.
+2. plot_threads: reconstruct every thread that spans 3+ chapters. Fill opening_chapter, last_advanced_chapter, milestones with actual chapter numbers (planned=false, status "done"), status (resolved/active/abandoned at book end), actual_resolution, participants, central_question, stakes.
+3. promises: reconstruct setups and their payoffs. status must reflect the book: paid_off with payoff_chapter, forgotten if never paid off, subverted, misdirected. Fill intended_interpretation and false_interpretation where the book misdirects.
+4. knowledge_facts: the secrets and asymmetric information that drive the book. For each, per-entity knowledge states with learned_chapter and how_learned; reader_state; the actual reveal chapter goes in planned_reveal_chapter (it is historical here).
+5. timeline_events: the 15-40 events the causality depends on, in story order with order_index, cause/action/effects, chapter_number.
+6. relationship_arcs: every central pair. Milestones with actual chapter numbers (planned=false). Trust/affection/fear/dependency/resentment reflect the END state of the book; describe the start state in public/private relationship text and milestones.
+7. architecture_thinking: 150-300 words on how the reconstructed threads, promises and secrets interlock to produce the book's momentum.
+8. Do not invent. If the analyses do not support a field, leave it empty.
+
+[Output]
+Output strictly according to the JSON Schema you are given.
+
+[Chapter analyses digest]
+$analyses_digest

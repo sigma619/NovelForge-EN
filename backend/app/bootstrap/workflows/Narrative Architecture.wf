@@ -1,0 +1,127 @@
+# Workflow: Narrative Architecture
+# Function: When the Narrative Architecture card is saved, fan its ledgers out into
+#           Plot Thread / Promise Payoff / Knowledge Fact / Timeline Event / Relationship Arc cards
+# Trigger: Automatically triggered when a Narrative Architecture card is saved
+
+#@node(description="Trigger: listen for Narrative Architecture card save")
+trigger = Trigger.CardSaved(card_type="Narrative Architecture")
+#</node>
+
+
+#@node(description="Read the architecture card")
+arch = Card.Read(card_id=trigger.card_id)
+#</node>
+
+
+#@node(description="Plot threads")
+threads = Logic.Expression(
+    expression="arch.content.plot_threads or []"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Plot Thread cards (matched by thread name)")
+thread_cards = Card.BatchUpsert(
+    project_id=trigger.project_id,
+    parent_id=trigger.card_id,
+    card_type="Plot Thread",
+    title_template="{item.name}",
+    match_by="title",
+    items=threads.result
+  )
+#</node>
+
+
+#@node(description="Promise / payoff entries")
+promises = Logic.Expression(
+    expression="arch.content.promises or []"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Promise Payoff cards (matched by setup text)")
+promise_cards = Card.BatchUpsert(
+    project_id=trigger.project_id,
+    parent_id=trigger.card_id,
+    card_type="Promise Payoff",
+    title_template="{item.setup}",
+    match_by="title",
+    items=promises.result
+  )
+#</node>
+
+
+#@node(description="Knowledge facts / secrets")
+facts = Logic.Expression(
+    expression="arch.content.knowledge_facts or []"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Knowledge Fact cards (matched by fact text)")
+fact_cards = Card.BatchUpsert(
+    project_id=trigger.project_id,
+    parent_id=trigger.card_id,
+    card_type="Knowledge Fact",
+    title_template="{item.fact}",
+    match_by="title",
+    items=facts.result
+  )
+#</node>
+
+
+#@node(description="Timeline events")
+events = Logic.Expression(
+    expression="arch.content.timeline_events or []"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Timeline Event cards (matched by title)")
+event_cards = Card.BatchUpsert(
+    project_id=trigger.project_id,
+    parent_id=trigger.card_id,
+    card_type="Timeline Event",
+    title_template="{item.title}",
+    match_by="title",
+    items=events.result
+  )
+#</node>
+
+
+#@node(description="Relationship arcs, titled 'A ↔ B' with names in alphabetical order so the Living Bible can find them")
+relationships = Logic.Expression(
+    expression="[merge(rel, {'pair_title': ' ↔ '.join(sorted([str(rel.character_a or ''), str(rel.character_b or '')]))}) for rel in (arch.content.relationship_arcs or [])]"
+  )
+#</node>
+
+
+#@node(async=true, description="Upsert Relationship Arc cards")
+relationship_cards = Card.BatchUpsert(
+    project_id=trigger.project_id,
+    parent_id=trigger.card_id,
+    card_type="Relationship Arc",
+    title_template="{item.pair_title}",
+    match_by="title",
+    items=relationships.result
+  )
+#</node>
+
+
+#@node(description="Wait for all ledgers to be written")
+wait_result = Logic.Wait(tasks=[thread_cards, promise_cards, fact_cards, event_cards, relationship_cards])
+#</node>
+
+
+#@node(description="Clear the source lists so the ledger cards become the single source of truth")
+update_result = Card.Update(
+    card_id=trigger.card_id,
+    content_merge={
+      "plot_threads": [],
+      "promises": [],
+      "knowledge_facts": [],
+      "timeline_events": [],
+      "relationship_arcs": []
+    }
+  )
+#</node>

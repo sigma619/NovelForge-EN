@@ -1213,6 +1213,245 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bible/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Novel Bible dashboard: sections, counts and audits */
+        get: operations["dashboard_api_bible_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Run deterministic continuity audits over the Bible ledgers */
+        get: operations["audit_api_bible_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/relationships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Relationship arcs with milestones and history */
+        get: operations["relationships_api_bible_relationships_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/knowledge-matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Information-reveal matrix (who knows what) */
+        get: operations["knowledge_matrix_api_bible_knowledge_matrix_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/compile-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compile the minimum relevant Bible slice for a chapter */
+        post: operations["compile_context_api_bible_compile_context_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/characters/deepen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Deepen one Character Card into a Character Bible entry */
+        post: operations["deepen_character_api_bible_characters_deepen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/updates/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract proposed Bible updates from a chapter (nothing is applied) */
+        post: operations["extract_updates_api_bible_updates_extract_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Bible update reviews for a project */
+        get: operations["list_updates_api_bible_updates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/updates/{review_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one Bible update review */
+        get: operations["get_update_api_bible_updates__review_id__get"];
+        put?: never;
+        post?: never;
+        /** Dismiss a Bible update review */
+        delete: operations["delete_update_api_bible_updates__review_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bible/updates/{review_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept / reject / edit / postpone proposed changes */
+        post: operations["decide_api_bible_updates__review_id__decide_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lab/manuscript/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Parse a user-supplied manuscript and preview chapter detection */
+        post: operations["preview_manuscript_api_lab_manuscript_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lab/manuscript/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Store the corrected chapter split as Chapter Analysis cards */
+        post: operations["import_manuscript_api_lab_manuscript_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lab/manuscript": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the imported manuscript chapters and their analysis status */
+        get: operations["list_manuscript_api_lab_manuscript_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lab/manuscript/defaults": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Default detection patterns */
+        get: operations["manuscript_defaults_api_lab_manuscript_defaults_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/knowledge/": {
         parameters: {
             query?: never;
@@ -2071,6 +2310,8 @@ export interface components {
             };
             /** @description Structured fact subgraph */
             facts_structured?: components["schemas"]["FactsStructured"] | null;
+            /** @description Compiled Novel Bible slice for this chapter */
+            bible_context?: components["schemas"]["BibleContext"] | null;
         };
         /**
          * AssistantChatRequest
@@ -2145,6 +2386,213 @@ export interface components {
              * @description Whether to enable React text protocol tool-call mode
              */
             react_mode_enabled?: boolean | null;
+        };
+        /** BibleAuditResponse */
+        BibleAuditResponse: {
+            /** Current Chapter */
+            current_chapter: number;
+            /** Warnings */
+            warnings: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** BibleContext */
+        BibleContext: {
+            /**
+             * Text
+             * @description Compiled Bible slice as prompt text
+             * @default
+             */
+            text: string;
+            /**
+             * Blocks
+             * @description Selected blocks with selection reasons
+             */
+            blocks?: components["schemas"]["BibleContextBlock"][];
+            /**
+             * Prohibited
+             * @description Facts the POV/reader must not learn yet
+             */
+            prohibited?: string[];
+            /**
+             * Budget Chars
+             * @default 0
+             */
+            budget_chars: number;
+            /**
+             * Used Chars
+             * @default 0
+             */
+            used_chars: number;
+            /**
+             * Dropped
+             * @default 0
+             */
+            dropped: number;
+        };
+        /** BibleContextBlock */
+        BibleContextBlock: {
+            /** Section */
+            section: string;
+            /** Title */
+            title: string;
+            /** Text */
+            text: string;
+            /** Reason */
+            reason: string;
+            /** Truth Status */
+            truth_status?: string | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Card Id */
+            card_id?: number | null;
+            /**
+             * Priority
+             * @default 50
+             */
+            priority: number;
+        };
+        /** BibleDashboardResponse */
+        BibleDashboardResponse: {
+            /** Project Id */
+            project_id: number;
+            /** Current Chapter */
+            current_chapter: number;
+            /** Sections */
+            sections: {
+                [key: string]: unknown;
+            };
+            /** Audits */
+            audits: {
+                [key: string]: unknown;
+            };
+        };
+        /** BibleUpdateApplyResult */
+        BibleUpdateApplyResult: {
+            /** Review Id */
+            review_id: number;
+            /** Applied */
+            applied: number;
+            /** Rejected */
+            rejected: number;
+            /** Postponed */
+            postponed: number;
+            /** Created Cards */
+            created_cards?: number[];
+            /** Updated Cards */
+            updated_cards?: number[];
+            /** Errors */
+            errors?: string[];
+            /** Status */
+            status: string;
+        };
+        /** BibleUpdateDecideRequest */
+        BibleUpdateDecideRequest: {
+            /** Decisions */
+            decisions: components["schemas"]["ChangeDecision"][];
+        };
+        /** BibleUpdateExtractRequest */
+        BibleUpdateExtractRequest: {
+            /** Project Id */
+            project_id: number;
+            /** Llm Config Id */
+            llm_config_id: number;
+            /**
+             * Text
+             * @description Chapter text
+             */
+            text: string;
+            /**
+             * Chapter Card Id
+             * @description Chapter Text card id, for provenance
+             */
+            chapter_card_id?: number | null;
+            /** Volume Number */
+            volume_number?: number | null;
+            /** Chapter Number */
+            chapter_number?: number | null;
+            /**
+             * Participants
+             * @description Participant entity names (priority focus, not a hard limit)
+             */
+            participants?: string[];
+            /**
+             * Outline Text
+             * @description Chapter outline, used to detect planned-vs-actual deviations
+             */
+            outline_text?: string | null;
+            /** Temperature */
+            temperature?: number | null;
+            /** Max Tokens */
+            max_tokens?: number | null;
+            /** Timeout */
+            timeout?: number | null;
+        };
+        /**
+         * BibleUpdateProposal
+         * @description Output of the Bible Update Extraction prompt.
+         */
+        BibleUpdateProposal: {
+            /**
+             * Chapter Number
+             * @description Chapter analysed
+             */
+            chapter_number?: number | null;
+            /**
+             * Volume Number
+             * @description Volume
+             */
+            volume_number?: number | null;
+            /**
+             * Extraction Thinking
+             * @description Brief reasoning: what changed in the story state and what did not happen that was planned
+             * @default
+             */
+            extraction_thinking: string;
+            /**
+             * Changes
+             * @description Proposed changes
+             */
+            changes?: components["schemas"]["ProposedChange"][];
+            /**
+             * Unplanned Events
+             * @description Notable events not in the outline
+             */
+            unplanned_events?: string[];
+            /**
+             * Planned But Missing
+             * @description Outline events that did not occur
+             */
+            planned_but_missing?: string[];
+        };
+        /** BibleUpdateReviewListResponse */
+        BibleUpdateReviewListResponse: {
+            /** Items */
+            items: components["schemas"]["BibleUpdateReviewRead"][];
+        };
+        /** BibleUpdateReviewRead */
+        BibleUpdateReviewRead: {
+            /** Id */
+            id: number;
+            /** Project Id */
+            project_id: number;
+            /** Chapter Card Id */
+            chapter_card_id: number | null;
+            /** Volume Number */
+            volume_number: number | null;
+            /** Chapter Number */
+            chapter_number: number | null;
+            /** Status */
+            status: string;
+            proposal: components["schemas"]["BibleUpdateProposal"];
+            /** Decisions */
+            decisions: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
         };
         /** CancelResponse */
         CancelResponse: {
@@ -2432,6 +2880,109 @@ export interface components {
             /** Needs Confirmation */
             needs_confirmation?: boolean | null;
         };
+        /** ChangeDecision */
+        ChangeDecision: {
+            /** Change Id */
+            change_id: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "accept" | "reject" | "postpone" | "intentional_contradiction" | "unreliable_narration" | "mark_planned";
+            /**
+             * Edited Value
+             * @description If the user edited the value before accepting
+             */
+            edited_value?: unknown;
+            /** Note */
+            note?: string | null;
+        };
+        /** ChapterPreview */
+        ChapterPreview: {
+            /** Index */
+            index: number;
+            /** Number */
+            number: number | null;
+            /** Title */
+            title: string;
+            /** Volume */
+            volume: string;
+            /** Word Count */
+            word_count: number;
+            /** Flags */
+            flags: string[];
+            /** Preview */
+            preview: string;
+        };
+        /** CharacterDeepenRequest */
+        CharacterDeepenRequest: {
+            /** Project Id */
+            project_id: number;
+            /** Card Id */
+            card_id: number;
+            /** Llm Config Id */
+            llm_config_id: number;
+            /** User Notes */
+            user_notes?: string | null;
+            /** Temperature */
+            temperature?: number | null;
+            /** Max Tokens */
+            max_tokens?: number | null;
+            /** Timeout */
+            timeout?: number | null;
+        };
+        /** CompileContextRequest */
+        CompileContextRequest: {
+            /** Project Id */
+            project_id: number;
+            /** Chapter Number */
+            chapter_number?: number | null;
+            /** Participants */
+            participants?: string[];
+            /** Pov */
+            pov?: string | null;
+            /**
+             * Budget Chars
+             * @default 6000
+             */
+            budget_chars: number;
+            /** Chapter Goal */
+            chapter_goal?: string | null;
+        };
+        /** CompileContextResponse */
+        CompileContextResponse: {
+            /** Text */
+            text: string;
+            /** Blocks */
+            blocks: components["schemas"]["CompiledBlockRead"][];
+            /** Prohibited */
+            prohibited: string[];
+            /** Budget Chars */
+            budget_chars: number;
+            /** Used Chars */
+            used_chars: number;
+            /** Dropped */
+            dropped: number;
+        };
+        /** CompiledBlockRead */
+        CompiledBlockRead: {
+            /** Section */
+            section: string;
+            /** Title */
+            title: string;
+            /** Text */
+            text: string;
+            /** Reason */
+            reason: string;
+            /** Truth Status */
+            truth_status?: string | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Card Id */
+            card_id?: number | null;
+            /** Priority */
+            priority: number;
+        };
         /** ConceptSummary */
         ConceptSummary: {
             /**
@@ -2637,6 +3188,37 @@ export interface components {
              * @description Brief description of the specific dynamic info
              */
             info: string;
+        };
+        /**
+         * Evidence
+         * @description A pointer from a Bible conclusion back to the text that supports it.
+         */
+        Evidence: {
+            /**
+             * Chapter Number
+             * @description Source chapter number (book-wide)
+             */
+            chapter_number?: number | null;
+            /**
+             * Volume Number
+             * @description Source volume number, if known
+             */
+            volume_number?: number | null;
+            /**
+             * Scene
+             * @description Scene or paragraph hint inside the chapter
+             */
+            scene?: string | null;
+            /**
+             * Quote
+             * @description Short supporting quotation (<= 200 characters, never a large excerpt)
+             */
+            quote?: string | null;
+            /**
+             * Note
+             * @description Why this passage supports the conclusion
+             */
+            note?: string | null;
         };
         /** ExtractOnlyRequest */
         ExtractOnlyRequest: {
@@ -3070,6 +3652,15 @@ export interface components {
             /** Content */
             content: string;
         };
+        /** KnowledgeMatrixResponse */
+        KnowledgeMatrixResponse: {
+            /** Entities */
+            entities: string[];
+            /** Rows */
+            rows: {
+                [key: string]: unknown;
+            }[];
+        };
         /** KnowledgeRead */
         KnowledgeRead: {
             /** Name */
@@ -3449,6 +4040,180 @@ export interface components {
             /** User Agent */
             user_agent?: string | null;
         };
+        /** ManuscriptImportRequest */
+        ManuscriptImportRequest: {
+            /** Filename */
+            filename: string;
+            /**
+             * Content Base64
+             * @description File bytes, base64 encoded (user-supplied file only)
+             */
+            content_base64: string;
+            /**
+             * Encoding
+             * @description Text encoding for TXT/MD; auto-detect when empty
+             */
+            encoding?: string | null;
+            /**
+             * Chapter Pattern
+             * @description Chapter heading regex; auto-detected when empty
+             */
+            chapter_pattern?: string | null;
+            /**
+             * Volume Pattern
+             * @description Volume heading regex
+             */
+            volume_pattern?: string | null;
+            /**
+             * Exclude Front Matter
+             * @default true
+             */
+            exclude_front_matter: boolean;
+            /**
+             * Exclude Afterword
+             * @default true
+             */
+            exclude_afterword: boolean;
+            /**
+             * Corrections
+             * @description split/merge/exclude/include/rename ops
+             */
+            corrections?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Preview Chars
+             * @default 400
+             */
+            preview_chars: number;
+            /** Project Id */
+            project_id: number;
+            /**
+             * Book Title
+             * @default
+             */
+            book_title: string;
+            /**
+             * Author
+             * @default
+             */
+            author: string;
+            /**
+             * Genre
+             * @default
+             */
+            genre: string;
+            /**
+             * Language
+             * @default
+             */
+            language: string;
+            /**
+             * Replace Existing
+             * @default true
+             */
+            replace_existing: boolean;
+        };
+        /** ManuscriptImportResponse */
+        ManuscriptImportResponse: {
+            /** Folder Card Id */
+            folder_card_id: number;
+            /** Chapter Card Ids */
+            chapter_card_ids: number[];
+            /** Chapter Count */
+            chapter_count: number;
+            /** Total Words */
+            total_words: number;
+        };
+        /** ManuscriptListResponse */
+        ManuscriptListResponse: {
+            /** Folder Card Id */
+            folder_card_id: number | null;
+            /** Meta */
+            meta: {
+                [key: string]: unknown;
+            };
+            /** Chapters */
+            chapters: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ManuscriptPreviewRequest */
+        ManuscriptPreviewRequest: {
+            /** Filename */
+            filename: string;
+            /**
+             * Content Base64
+             * @description File bytes, base64 encoded (user-supplied file only)
+             */
+            content_base64: string;
+            /**
+             * Encoding
+             * @description Text encoding for TXT/MD; auto-detect when empty
+             */
+            encoding?: string | null;
+            /**
+             * Chapter Pattern
+             * @description Chapter heading regex; auto-detected when empty
+             */
+            chapter_pattern?: string | null;
+            /**
+             * Volume Pattern
+             * @description Volume heading regex
+             */
+            volume_pattern?: string | null;
+            /**
+             * Exclude Front Matter
+             * @default true
+             */
+            exclude_front_matter: boolean;
+            /**
+             * Exclude Afterword
+             * @default true
+             */
+            exclude_afterword: boolean;
+            /**
+             * Corrections
+             * @description split/merge/exclude/include/rename ops
+             */
+            corrections?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Preview Chars
+             * @default 400
+             */
+            preview_chars: number;
+        };
+        /** ManuscriptPreviewResponse */
+        ManuscriptPreviewResponse: {
+            /** Chapter Pattern */
+            chapter_pattern: string;
+            /** Pattern Name */
+            pattern_name: string;
+            /** Volume Pattern */
+            volume_pattern: string;
+            /** Chapters */
+            chapters: components["schemas"]["ChapterPreview"][];
+            /** Volumes */
+            volumes: string[];
+            /** Warnings */
+            warnings: string[];
+            /** Total Words */
+            total_words: number;
+            /** Total Chapters */
+            total_chapters: number;
+            /** Included Chapters */
+            included_chapters: number;
+            /** Estimated Input Tokens */
+            estimated_input_tokens: number;
+            /** Pattern Candidates */
+            pattern_candidates: {
+                [key: string]: string;
+            }[];
+            /** Supported Extensions */
+            supported_extensions: string[];
+        };
         /** MemoryExtractorInfo */
         MemoryExtractorInfo: {
             /** Code */
@@ -3585,6 +4350,105 @@ export interface components {
             description?: string | null;
             /** Template */
             template?: string | null;
+        };
+        /**
+         * ProposedChange
+         * @description One proposed change to the Bible. ``id`` is assigned by the extractor so the UI can address it.
+         */
+        ProposedChange: {
+            /**
+             * Id
+             * @description Stable id assigned by the system (leave empty)
+             * @default
+             */
+            id: string;
+            /**
+             * Kind
+             * @description Change kind
+             * @enum {string}
+             */
+            kind: "new_fact" | "character_state" | "goal_change" | "belief_change" | "relationship_change" | "new_entity" | "world_rule" | "timeline_event" | "knowledge_change" | "thread_opened" | "thread_advanced" | "thread_resolved" | "promise_planted" | "promise_reinforced" | "payoff_delivered" | "contradiction" | "plan_deviation" | "style_drift";
+            /**
+             * Summary
+             * @description One-line human readable summary, e.g. 'Mira learned the gate requires royal blood'
+             */
+            summary: string;
+            /**
+             * Target Card Type
+             * @description Card type this change writes to
+             * @default none
+             * @enum {string}
+             */
+            target_card_type: "Character Card" | "Relationship Arc" | "World Rule" | "Power System" | "Plot Thread" | "Promise Payoff" | "Knowledge Fact" | "Timeline Event" | "Scene Card" | "Organization Card" | "Item Card" | "Concept Card" | "Style Profile" | "Story Foundation" | "none";
+            /**
+             * Target Title
+             * @description Title of the existing target card (canonical entity name / thread name / setup text). Empty if a new card should be created
+             * @default
+             */
+            target_title: string;
+            /**
+             * Field Path
+             * @description Field path inside the target card content, e.g. 'core_drive', 'dramatic_design.external_goal', 'trust', 'status'
+             * @default
+             */
+            field_path: string;
+            /**
+             * Previous Value
+             * @description Previous value as known from the Bible, if any
+             */
+            previous_value?: unknown;
+            /**
+             * New Value
+             * @description Proposed new value. For new cards this is the full card content dict
+             */
+            new_value?: unknown;
+            /**
+             * Truth Status
+             * @description canon if stated on the page, believed if a character asserts it, inferred if deduced
+             * @default inferred
+             * @enum {string}
+             */
+            truth_status: "canon" | "believed" | "planned" | "inferred" | "disputed" | "obsolete";
+            /**
+             * Explicit
+             * @description True if explicitly stated in the chapter text; False if inferred
+             * @default true
+             */
+            explicit: boolean;
+            /**
+             * Confidence
+             * @description Confidence 0..1
+             * @default 0.7
+             */
+            confidence: number;
+            /**
+             * Risk
+             * @description Risk of accepting wrongly: low = additive detail; medium = changes an existing value; high = contradiction or canon rewrite
+             * @default low
+             * @enum {string}
+             */
+            risk: "low" | "medium" | "high";
+            /**
+             * Evidence
+             * @description Evidence with short quotes
+             */
+            evidence?: components["schemas"]["Evidence"][];
+            /**
+             * Conflicting Evidence
+             * @description Evidence that contradicts this change, if any
+             */
+            conflicting_evidence?: components["schemas"]["Evidence"][];
+            /**
+             * Related Entities
+             * @description Entities involved
+             */
+            related_entities?: string[];
+            /**
+             * Note
+             * @description Extra explanation for the reviewer
+             * @default
+             */
+            note: string;
         };
         /** QueryRequest */
         QueryRequest: {
@@ -3998,6 +4862,13 @@ export interface components {
              * @description A's overall stance toward B (optional)
              */
             stance?: ("Friendly" | "Neutral" | "Hostile") | null;
+        };
+        /** RelationshipMatrixResponse */
+        RelationshipMatrixResponse: {
+            /** Arcs */
+            arcs: {
+                [key: string]: unknown;
+            }[];
         };
         /** ReviewCardUpsertRequest */
         ReviewCardUpsertRequest: {
@@ -7318,6 +8189,476 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_api_bible_dashboard_get: {
+        parameters: {
+            query: {
+                project_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibleDashboardResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_api_bible_audit_get: {
+        parameters: {
+            query: {
+                project_id: number;
+                current_chapter?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibleAuditResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relationships_api_bible_relationships_get: {
+        parameters: {
+            query: {
+                project_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelationshipMatrixResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    knowledge_matrix_api_bible_knowledge_matrix_get: {
+        parameters: {
+            query: {
+                project_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeMatrixResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compile_context_api_bible_compile_context_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompileContextRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompileContextResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deepen_character_api_bible_characters_deepen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharacterDeepenRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_updates_api_bible_updates_extract_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BibleUpdateExtractRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibleUpdateReviewRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_updates_api_bible_updates_get: {
+        parameters: {
+            query: {
+                project_id: number;
+                status?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibleUpdateReviewListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_update_api_bible_updates__review_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                review_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibleUpdateReviewRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_update_api_bible_updates__review_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                review_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_api_bible_updates__review_id__decide_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                review_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BibleUpdateDecideRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibleUpdateApplyResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_manuscript_api_lab_manuscript_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManuscriptPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManuscriptPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_manuscript_api_lab_manuscript_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManuscriptImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManuscriptImportResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_manuscript_api_lab_manuscript_get: {
+        parameters: {
+            query: {
+                project_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManuscriptListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    manuscript_defaults_api_lab_manuscript_defaults_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

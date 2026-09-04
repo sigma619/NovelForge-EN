@@ -166,6 +166,14 @@
         <el-tab-pane :label="t('editorPage.tabRelationGraph')" name="relation-graph">
           <RelationGraphPanel :refresh-seq="relationGraphRefreshSeq" />
         </el-tab-pane>
+        <el-tab-pane :label="t('bible.tab')" name="bible">
+          <BibleStudioPanel
+            :project-id="projectStore.currentProject?.id"
+            :refresh-seq="bibleRefreshSeq"
+            :open-review-id="bibleOpenReviewId"
+            @open-card="handleEditCard"
+          />
+        </el-tab-pane>
       </el-tabs>
     </el-main>
 
@@ -369,6 +377,19 @@ import {
   OfficeBuilding,
   Document,
   Folder,
+  Compass,
+  Flag,
+  Key,
+  Clock,
+  Share,
+  Guide,
+  Aim,
+  Reading,
+  DataAnalysis,
+  Histogram,
+  TrendCharts,
+  Opportunity,
+  Memo,
 } from '@element-plus/icons-vue'
 import type { components } from '@renderer/types/generated'
 import { useSidebarResizer } from '@renderer/composables/useSidebarResizer'
@@ -378,6 +399,7 @@ import ChapterToolsPanel from '@renderer/components/panels/ChapterToolsPanel.vue
 import OutlinePanel from '@renderer/components/panels/OutlinePanel.vue'
 import ReviewHistoryPanel from '@renderer/components/panels/ReviewHistoryPanel.vue'
 import RelationGraphPanel from '@renderer/components/panels/RelationGraphPanel.vue'
+import BibleStudioPanel from '@renderer/components/bible/BibleStudioPanel.vue'
 import { useCardStore } from '@renderer/stores/useCardStore'
 import { useEditorStore } from '@renderer/stores/useEditorStore'
 import { useProjectStore } from '@renderer/stores/useProjectStore'
@@ -546,6 +568,8 @@ const groupedTree = computed(() => buildGroupedNodes(cardTree.value as unknown a
 // Local State
 const activeTab = ref('market')
 const relationGraphRefreshSeq = ref(0)
+const bibleRefreshSeq = ref(0)
+const bibleOpenReviewId = ref<number | null>(null)
 const activeRightTab = ref('assistant')
 const isCreateCardDialogVisible = ref(false)
 const exportDialogVisible = ref(false)
@@ -1255,6 +1279,41 @@ function getIconByCardType(typeName?: string) {
       return CollectionTag
     case 'Folder':
       return Folder
+    // Novel Bible 2.0
+    case 'Story Foundation':
+      return Compass
+    case 'Reader Contract':
+      return Flag
+    case 'Theme Map':
+      return Opportunity
+    case 'Power System':
+      return Key
+    case 'Style Profile':
+      return Reading
+    case 'Narrative Architecture':
+      return Guide
+    case 'Plot Thread':
+      return Share
+    case 'Promise Payoff':
+      return Aim
+    case 'Knowledge Fact':
+      return Key
+    case 'Timeline Event':
+      return Clock
+    case 'Relationship Arc':
+      return Connection
+    case 'World Rule':
+      return Memo
+    case 'Chapter Analysis':
+      return DataAnalysis
+    case 'Story Structure Map':
+      return Histogram
+    case 'Emotional Rhythm':
+      return TrendCharts
+    case 'Narrative Genome':
+      return DataAnalysis
+    case 'Originality Transformation':
+      return MagicStick
     default:
       return Document // Generic default icon
   }
@@ -1617,6 +1676,22 @@ watch(prefetchedContext, () => { if (!assistantSelectionCleared.value) refreshAs
 watch(activeTab, (tab) => {
   if (tab === 'relation-graph') {
     relationGraphRefreshSeq.value += 1
+  }
+  if (tab === 'bible') {
+    bibleRefreshSeq.value += 1
+  }
+})
+
+// Living Bible: a chapter extraction produced a review -> jump to the Bible tab on it.
+function handleBibleReviewCreated(reviewId: number) {
+  bibleOpenReviewId.value = reviewId
+  activeTab.value = 'bible'
+}
+
+watch(() => editorStore.lastBibleReviewId, (id) => {
+  if (id) {
+    handleBibleReviewCreated(id)
+    editorStore.setLastBibleReviewId(null)
   }
 })
 

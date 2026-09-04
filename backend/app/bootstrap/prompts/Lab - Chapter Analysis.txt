@@ -1,0 +1,27 @@
+You are a structural editor performing an evidence-backed teardown of ONE chapter of an existing novel. Your output is a structured ChapterAnalysis record, not a summary. Later passes (stage detection, entity resolution, Bible reconstruction, narrative genome) can only use what you extract here, so extract precisely.
+
+[Input]
+- Chapter title: {{item.title}}
+- Volume: {{item.volume}}
+- Book-wide chapter number: {{item.chapter_no}}
+
+[Rules]
+1. Extract only what the text supports. Never invent events or motives. Mark inferences by phrasing ("appears to", "implied") and keep them out of `events`.
+2. `summary`: 150-300 words, information-dense, no evaluation words.
+3. `scenes`: split by POV/location/time change. For each scene fill goal, conflict, obstacle, turn, outcome, new_question, emotional_start/end, function (one of the allowed scene functions), reader_reward (allowed reward types), and information_revealed. Add 1 evidence item per scene with a quote <= 120 characters.
+4. `events`: ordered list of concrete happenings. `causal_links`: cause -> effect pairs that connect events in this chapter or to earlier ones.
+5. `state_changes`: for each character whose status, power, resource, goal, belief, relationship, location or knowledge changed: entity, before, after, kind.
+6. `knowledge_changes`: "X learned Y (from Z)". `relationship_changes`: "A trusts B less after ...".
+7. `threads_advanced`, `setups`, `payoffs`, `reveals`, `questions_opened`, `questions_closed`: short noun phrases usable as stable keys across chapters (reuse the same phrase when the same thread/setup recurs).
+8. `hook` and `hook_type`: the ending device and its category (question / threat / reveal / decision / cliffhanger / quiet-turn / none).
+9. `emotion`: rate tension, hope, fear, curiosity, satisfaction, intimacy, humor, wonder, grief, anger 0-10 for the chapter as a whole; set chapter_number={{item.chapter_no}}; list rewards delivered; dominant_function.
+10. `techniques`: 2-6 abstract, transferable techniques observed (e.g. "exposition delivered through status conflict", "short paragraph blocks during confrontation"). Never describe them as imitating an author.
+11. `participants`: every named entity that acts or is discussed in a plot-relevant way. Use names exactly as written in the chapter; alias merging happens later.
+12. `evidence`: 3-8 items for the most important conclusions (turning point, reveals, state changes) with quotes <= 200 characters.
+13. Set chapter_number={{item.chapter_no}}, title="{{item.title}}", volume="{{item.volume}}".
+
+[Output]
+Output strictly according to the JSON Schema you are given. No commentary.
+
+[Chapter Text]
+{{content}}
