@@ -1,4 +1,4 @@
-{
+﻿{
   "app": {
     "workflow": {
       "loadingName": "加载中...",
@@ -57,6 +57,9 @@
       "daysAgo": "{n}天前",
       "uncategorized": "未分类",
       "toolCallFailed": "工具调用失败",
+      "toolCallRetrying": "工具调用失败，{reason}，正在重试 ({current}/{max})...",
+      "toolCallError": "工具调用失败: {message}",
+      "errorPrefix": "[错误]",
       "executionFailed": "执行失败",
       "taskCompleted": "任务已完成",
       "callingTool": "正在调用工具: {name}",

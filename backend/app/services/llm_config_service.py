@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 from sqlmodel import Session, select
 
 from app.db.models import LLMConfig
-from app.schemas.llm_config import LLMConfigCreate, LLMConfigUpdate
+from app.schemas.llm_config import LLMConfigCreate, LLMConfigUpdate, is_masked_api_key
 
 
 def _normalize_protocol(value: str | None) -> str:
@@ -150,6 +150,11 @@ def update_llm_config(session: Session, config_id: int, config_in: LLMConfigUpda
         return None
 
     update_data = config_in.model_dump(exclude_unset=True)
+    # A masked (or emptied) api_key means "keep the existing key" — the read
+    # endpoint never returns the real key, so edit forms round-trip the mask.
+    api_key_in = update_data.get("api_key")
+    if api_key_in is not None and (str(api_key_in).strip() == "" or is_masked_api_key(api_key_in)):
+        update_data.pop("api_key")
     for key, value in update_data.items():
         setattr(db_config, key, value)
     _sync_legacy_base_url(db_config)

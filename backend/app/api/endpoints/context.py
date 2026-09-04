@@ -17,6 +17,7 @@ def assemble(req: AssembleContextRequest, session: Session = Depends(get_session
         chapter_id=req.chapter_id,
         participants=req.participants,
         current_draft_tail=req.current_draft_tail,
+        pov=req.pov,
     )
     ctx = assemble_context(session, params)
     return AssembleContextResponse(**ctx.__dict__)

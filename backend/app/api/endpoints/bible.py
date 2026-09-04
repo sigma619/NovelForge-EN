@@ -179,7 +179,9 @@ def decide(review_id: int, req: BibleUpdateDecideRequest, session: Session = Dep
     try:
         return svc.decide(review_id, req.decisions)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        message = str(e)
+        status_code = 409 if "already" in message else 404
+        raise HTTPException(status_code=status_code, detail=message)
 
 
 @router.delete("/updates/{review_id}", summary="Dismiss a Bible update review")

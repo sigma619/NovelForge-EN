@@ -47,7 +47,9 @@ CHAPTER_PATTERN_CANDIDATES: List[Tuple[str, str]] = [
 VOLUME_PATTERN_DEFAULT = r"^\s*(?:#+\s*)?(?:Volume|Book|Part|Arc)\s+(\d+|[IVXLC]+|[A-Za-z\-]+)\b.*$|^\s*第\s*([零一二三四五六七八九十百千0-9]+)\s*[卷部纪].*$"
 
 FRONT_MATTER_HINTS = ("copyright", "table of contents", "contents", "dedication", "acknowledg", "foreword", "preface", "prologue")
-AFTERWORD_HINTS = ("afterword", "epilogue", "about the author", "acknowledg", "postscript", "author's note", "authors note")
+# "epilogue" is intentionally NOT afterword: a story epilogue is narrative content,
+# not disposable back matter.
+AFTERWORD_HINTS = ("afterword", "about the author", "acknowledg", "postscript", "author's note", "authors note")
 
 _CJK_DIGITS = {"零": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
 _CJK_UNITS = {"十": 10, "百": 100, "千": 1000}
@@ -343,10 +345,28 @@ def detect_chapters(
         if first.word_count < min_chapter_words or any(h in low for h in FRONT_MATTER_HINTS if h != "prologue"):
             first.flags.append("front_matter")
     if chapters and exclude_afterword:
-        last = chapters[-1]
-        low = last.title.lower()
-        if any(h in low for h in AFTERWORD_HINTS):
-            last.flags.append("afterword")
+        # Flag the trailing run of afterword-ish sections (e.g. "Afterword"
+        # followed by "About the author"), not just the single last chapter.
+        i = len(chapters) - 1
+        while i >= 0:
+            low = chapters[i].title.lower()
+            if any(h in low for h in AFTERWORD_HINTS):
+                chapters[i].flags.append("afterword")
+                i -= 1
+            else:
+                break
+
+    # When front-matter exclusion is disabled, keep the preamble (text before
+    # the first chapter heading) as its own leading chapter instead of dropping it.
+    if not exclude_front_matter and preface_buffer:
+        preface_text = "\n\n".join(preface_buffer).strip()
+        if preface_text:
+            chapters.insert(0, DetectedChapter(
+                index=1, number=None, title="Preface", volume=chapters[0].volume if chapters else current_volume,
+                text=preface_text, word_count=_word_count(preface_text), start_line=0,
+            ))
+            for i, ch in enumerate(chapters, start=1):
+                ch.index = i
 
     # Duplicate / missing number / tiny chapter warnings.
     seen: Dict[str, int] = {}

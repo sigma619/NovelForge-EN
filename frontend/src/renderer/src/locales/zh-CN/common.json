@@ -1,5 +1,8 @@
-{
+﻿{
   "common": {
+  "aiGenerating": "AI生成中…",
+  "interruptGeneration": "中断生成",
+  "requestFailed": "请求失败：{status}",
     "confirm": "确认",
     "cancel": "取消",
     "save": "保存",

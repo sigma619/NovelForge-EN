@@ -20,12 +20,12 @@ class NovelLoadInput(BaseModel):
         description="Filename matching regex"
     )
     volume_pattern: str = Field(
-        r"第[一二三四五六七八九十0-9]+[卷部纪]", 
-        description="Volume folder matching regex"
+        r"第[一二三四五六七八九十0-9]+[卷部纪]|^(?:Volume|Book|Part|Arc)\s+\d+$",
+        description="Volume folder matching regex (CJK or English)"
     )
     chapter_pattern: str = Field(
-        r"第([零一二三四五六七八九十百千0-9]+)章", 
-        description="Chapter name matching regex (used to extract the index)"
+        r"第([零一二三四五六七八九十百千0-9]+)章|^Chapter\s+([0-9]+)",
+        description="Chapter name matching regex (used to extract the index; CJK or English)"
     )
 
 
@@ -33,6 +33,29 @@ class NovelLoadOutput(BaseModel):
     """Novel.Load node output"""
     chapter_list: List[Dict[str, Any]] = Field(..., description="Chapter metadata list")
     volume_list: List[str] = Field(..., description="Volume list")
+
+
+_CJK_NUM_MAP = {'零': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '百': 100, '千': 1000}
+
+
+def _parse_chapter_number(token: str) -> Optional[int]:
+    """Arabic digits or simple CJK numerals (up to thousands) -> int."""
+    t = (token or "").strip()
+    if not t:
+        return None
+    if t.isdigit():
+        return int(t)
+    if not all(ch in _CJK_NUM_MAP for ch in t):
+        return None
+    total, num = 0, 0
+    for ch in t:
+        val = _CJK_NUM_MAP[ch]
+        if val >= 10:
+            total += (num or 1) * val
+            num = 0
+        else:
+            num = val
+    return total + num
 
 
 @register_node
@@ -92,15 +115,21 @@ class NovelLoadNode(BaseNode[NovelLoadInput, NovelLoadOutput]):
                 idx = 0
                 match = chap_re.search(title)
                 if match:
-                    if match.groups():
-                        try:
-                            idx = int(match.group(1))
-                        except ValueError:
-                            pass
-                    else:
+                    num_val = None
+                    # Patterns may contain multiple groups (e.g. CJK or English
+                    # alternation); use the first group that actually matched.
+                    for g in match.groups():
+                        if g is None:
+                            continue
+                        num_val = _parse_chapter_number(g)
+                        if num_val is not None:
+                            break
+                    if num_val is None:
                         num_match = re.search(r"\d+", match.group())
                         if num_match:
-                            idx = int(num_match.group())
+                            num_val = int(num_match.group())
+                    if num_val is not None:
+                        idx = num_val
                 
                 # Build metadata
                 meta = {

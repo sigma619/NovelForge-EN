@@ -1,8 +1,8 @@
 {
   "name": "frontend",
-  "version": "0.9.6",
-  "buildVersion": "0.9.6",
-  "description": "Novel Forege",
+  "version": "0.10.0",
+  "buildVersion": "0.10.0",
+  "description": "NovelForge",
   "main": "./out/main/index.js",
   "author": "NovelForge Team",
   "homepage": "https://electron-vite.org",

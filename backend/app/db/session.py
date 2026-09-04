@@ -1,3 +1,4 @@
+from sqlalchemy import event
 from sqlmodel import create_engine, Session
 from app.core.config import settings
 
@@ -10,6 +11,16 @@ engine = create_engine(
     echo=settings.database.echo,
     connect_args={"check_same_thread": False}
 )
+
+if DATABASE_URL.startswith("sqlite"):
+    # WAL + busy_timeout: concurrent writers (API + background workflow threads)
+    # otherwise easily hit "database is locked" on the default rollback journal.
+    @event.listens_for(engine, "connect")
+    def _sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=5000")
+        cursor.close()
 
 
 def get_session():

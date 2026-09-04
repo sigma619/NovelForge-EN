@@ -22,6 +22,7 @@ class ContextAssembleParams:
 	current_draft_tail: Optional[str]
 	recent_chapters_window: Optional[int] = None
 	chapter_id: Optional[int] = None
+	pov: Optional[str] = None
 
 
 @dataclass
@@ -242,6 +243,7 @@ def assemble_context(session: Session, params: ContextAssembleParams) -> Assembl
 				project_id=params.project_id,
 				chapter_number=params.chapter_number,
 				participants=eff_participants,
+				pov=params.pov,
 				budget_chars=bible_quota,
 			)
 			if compiled.blocks or compiled.prohibited:

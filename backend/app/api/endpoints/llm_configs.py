@@ -14,6 +14,7 @@ from app.schemas.llm_config import (
     LLMCapabilityTestResult,
     LLMConnectionTest,
     LLMGetModelsRequest,
+    is_masked_api_key,
 )
 from app.schemas.response import ApiResponse
 from app.services import llm_config_service
@@ -26,6 +27,8 @@ router = APIRouter()
 
 @router.post("/", response_model=ApiResponse[LLMConfigRead])
 def create_llm_config_endpoint(config_in: LLMConfigCreate, session: Session = Depends(get_session)):
+    if is_masked_api_key(config_in.api_key):
+        raise HTTPException(status_code=400, detail="API key is masked; please enter the real key")
     if config_in.display_name is None or config_in.display_name == "":
         config_in.display_name = config_in.model_name
     config = llm_config_service.create_llm_config(session=session, config_in=config_in)

@@ -128,8 +128,9 @@ def test_context_compiler_prohibits_future_knowledge(client, project):
     assert any("King is poisoned" in p for p in data["prohibited"]), data["prohibited"]
     assert all(b["reason"] for b in data["blocks"])
 
-    ctx = client.post("/api/context/assemble", json={"project_id": pid, "chapter_number": 21, "participants": ["Mira", "Daren"]}).json()
-    assert ctx["bible_context"] and "[Reader Contract]" not in ctx["bible_context"]["text"] or ctx["bible_context"]["blocks"]
+    ctx = client.post("/api/context/assemble", json={"project_id": pid, "chapter_number": 21, "participants": ["Mira", "Daren"], "pov": "Mira"}).json()
+    assert ctx["bible_context"], ctx
+    assert ctx["bible_context"]["blocks"], ctx["bible_context"]
 
 
 def test_living_bible_review_loop(client, project):

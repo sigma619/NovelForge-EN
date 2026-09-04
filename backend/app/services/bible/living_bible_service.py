@@ -289,6 +289,8 @@ class LivingBibleService:
         review = self.get_review(review_id)
         if not review:
             raise ValueError("Review not found")
+        if review.status == "applied":
+            raise ValueError("This review is already fully applied")
         proposal = BibleUpdateProposal.model_validate(review.proposal_json or {})
         by_id = {c.id: c for c in proposal.changes}
         stored: Dict[str, Any] = dict(review.decisions_json or {})
@@ -302,6 +304,12 @@ class LivingBibleService:
             change = by_id.get(decision.change_id)
             if not change:
                 errors.append(f"Unknown change id: {decision.change_id}")
+                continue
+            # Idempotency: a change that was already accepted/rejected must not be
+            # applied twice (retrying a decide request would otherwise duplicate
+            # created cards and history entries). Postponed changes can be re-decided.
+            prior = stored.get(decision.change_id)
+            if isinstance(prior, dict) and prior.get("action") not in (None, "postpone"):
                 continue
             record = {"action": decision.action, "note": decision.note, "decided_at": _now_iso()}
             try:

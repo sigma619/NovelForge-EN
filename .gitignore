@@ -13,9 +13,8 @@ env/
 .venv/
 .env/
 
-# Alembic相关
-backend/alembic/versions/*.py
-!backend/alembic/versions/__init__.py
+# Alembic migrations are source code and must be committed
+# (previously ignored, which made schema upgrades unreproducible).
 
 # 忽略所有md文档，除了README
 *.md

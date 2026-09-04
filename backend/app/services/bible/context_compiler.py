@@ -103,6 +103,25 @@ class ContextCompiler:
         blocks: List[CompiledBlock] = []
         prohibited: List[str] = []
 
+        # Alias resolution: build alias/name -> canonical name from Character
+        # Cards, so ledgers that reference a nickname or alias still match.
+        alias_map: Dict[str, str] = {}
+
+        def canon(name: str) -> str:
+            return alias_map.get(str(name or "").strip().lower(), str(name or "").strip().lower())
+
+        for card in self.bible.cards_of_type(project_id, "Character Card"):
+            c = _c(card)
+            canonical = str(c.get("name") or card.title).strip().lower()
+            if not canonical:
+                continue
+            alias_map[canonical] = canonical
+            for alias in _lower_set(c.get("aliases")):
+                alias_map[alias] = canonical
+
+        names = {canon(n) for n in names}
+        pov_name = canon(pov_name)
+
         # 1. Reader contract + style: always relevant, compact.
         contract = self.bible.singleton(project_id, "Reader Contract")
         if contract:
@@ -170,7 +189,7 @@ class ContextCompiler:
         # 3. Relationships between participants.
         for card in self.bible.cards_of_type(project_id, "Relationship Arc"):
             c = _c(card)
-            a, b = str(c.get("character_a", "")).lower(), str(c.get("character_b", "")).lower()
+            a, b = canon(str(c.get("character_a", ""))), canon(str(c.get("character_b", "")))
             if names and not ({a, b} & names):
                 continue
             both = bool(names) and a in names and b in names
@@ -191,7 +210,7 @@ class ContextCompiler:
             c = _c(card)
             if c.get("status") in ("resolved", "abandoned", "obsolete"):
                 continue
-            parts = _lower_set(c.get("participants"))
+            parts = {canon(x) for x in _lower_set(c.get("participants"))}
             overlap = bool(parts & names) if names else True
             main = c.get("thread_type") == "main_plot"
             if not overlap and not main:
@@ -212,7 +231,7 @@ class ContextCompiler:
             c = _c(card)
             if c.get("status") in ("paid_off", "subverted", "intentionally_abandoned", "contradicted"):
                 continue
-            parts = _lower_set(c.get("participants"))
+            parts = {canon(x) for x in _lower_set(c.get("participants"))}
             rng = c.get("target_payoff_range")
             due = isinstance(rng, (list, tuple)) and len(rng) == 2 and isinstance(rng[0], int) and rng[0] <= chapter
             overdue = isinstance(rng, (list, tuple)) and len(rng) == 2 and isinstance(rng[1], int) and chapter > rng[1]
@@ -231,10 +250,10 @@ class ContextCompiler:
         for card in self.bible.cards_of_type(project_id, "Knowledge Fact"):
             c = _c(card)
             knowers = [k for k in (c.get("knowers") or []) if isinstance(k, dict)]
-            involved = {str(k.get("entity", "")).lower() for k in knowers}
+            involved = {canon(str(k.get("entity", ""))) for k in knowers}
             if names and not (involved & names) and c.get("sensitivity") != "high":
                 continue
-            pov_state = next((k for k in knowers if str(k.get("entity", "")).lower() == pov_name), None) if pov_name else None
+            pov_state = next((k for k in knowers if canon(str(k.get("entity", ""))) == pov_name), None) if pov_name else None
             reader_state = c.get("reader_state") or "unaware"
             reveal = c.get("planned_reveal_chapter")
             future = isinstance(reveal, int) and reveal > chapter
@@ -255,7 +274,7 @@ class ContextCompiler:
         # 7. World rules referencing participants or high story purpose; power system limits.
         for card in self.bible.cards_of_type(project_id, "World Rule"):
             c = _c(card)
-            known = _lower_set(c.get("known_by"))
+            known = {canon(x) for x in _lower_set(c.get("known_by"))}
             overlap = bool(known & names) if names else True
             if not overlap and c.get("domain") not in ("magic_power", "law", "politics"):
                 continue
@@ -298,6 +317,14 @@ class ContextCompiler:
         result = CompiledContext(budget_chars=budget_chars)
         used = 0
         for b in blocks:
+            # Obsolete facts never belong in generation context.
+            if b.truth_status == "obsolete":
+                result.dropped += 1
+                continue
+            # Keep planned / inferred / disputed / believed clearly separated
+            # from canon so the model does not treat them as settled truth.
+            if b.truth_status and b.truth_status != "canon":
+                b.text = f"[{b.truth_status}] {b.text}"
             size = len(b.text) + len(b.section) + 4
             if used + size > budget_chars and result.blocks:
                 result.dropped += 1
@@ -305,5 +332,6 @@ class ContextCompiler:
             result.blocks.append(b)
             used += size
         result.prohibited = prohibited[:20]
-        result.used_chars = used
+        # Account for headings/separators/prohibited text actually emitted.
+        result.used_chars = len(result.as_text())
         return result

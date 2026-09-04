@@ -2,7 +2,9 @@
 from typing import List, Optional, Tuple
 from sqlmodel import Session, select
 
-from app.db.models import Project, Workflow
+from loguru import logger
+
+from app.db.models import Project, Workflow, ForeshadowItem, BibleUpdateReview, KGRelation
 from app.schemas.project import ProjectCreate, ProjectUpdate
 from app.services.card_service import CardService
 from app.services.kg_provider import get_provider
@@ -37,8 +39,6 @@ def get_project(session: Session, project_id: int) -> Optional[Project]:
 
 
 
-from typing import List, Optional, Tuple
-
 def create_project(session: Session, project_in: ProjectCreate) -> Tuple[Project, List[int]]:
     # Check if project name already exists
     from sqlmodel import select
@@ -67,9 +67,9 @@ def create_project(session: Session, project_in: ProjectCreate) -> Tuple[Project
         
         emit_event("project.created", event_data)
         triggered_run_ids = event_data.get("triggered_run_ids", [])
-    except Exception:
-        # Do not block project creation
-        pass
+    except Exception as exc:
+        # Do not block project creation, but make template-init failures visible.
+        logger.warning(f"[ProjectCreate] project.created trigger failed for '{project_in.name}': {exc}")
     
     # Refresh to load newly created cards into project relationships
     session.refresh(db_project)
@@ -82,6 +82,16 @@ def update_project(session: Session, project_id: int, project_in: ProjectUpdate)
     if not db_project:
         return None
     project_data = project_in.model_dump(exclude_unset=True)
+    new_name = project_data.get("name")
+    if new_name and str(new_name).strip():
+        # Reserved name is never assignable through rename.
+        if str(new_name).strip() == FREE_PROJECT_NAME:
+            raise ValueError(f"'{FREE_PROJECT_NAME}' is a reserved project name")
+        existing = session.exec(
+            select(Project).where(Project.name == str(new_name).strip(), Project.id != project_id)
+        ).first()
+        if existing:
+            raise ValueError(f"Project name already exists: {new_name}")
     for key, value in project_data.items():
         setattr(db_project, key, value)
     session.add(db_project)
@@ -97,6 +107,15 @@ def delete_project(session: Session, project_id: int) -> bool:
     # Reserved projects cannot be deleted
     if getattr(project, 'name', None) == FREE_PROJECT_NAME:
         return False
+    # Delete project-owned rows that have no ORM cascade (cards cascade via the
+    # Project relationship; these tables do not).
+    for model in (ForeshadowItem, BibleUpdateReview, KGRelation):
+        try:
+            rows = session.exec(select(model).where(model.project_id == project_id)).all()
+            for row in rows:
+                session.delete(row)
+        except Exception as exc:
+            logger.warning(f"[ProjectDelete] Failed to clean {model.__name__} for project {project_id}: {exc}")
     # First delete the project record from the database
     session.delete(project)
     session.commit()
@@ -104,7 +123,7 @@ def delete_project(session: Session, project_id: int) -> bool:
     try:
         kg = get_provider()
         kg.delete_project_graph(project_id)
-    except Exception:
-        # Avoid impacting the main flow when the graph database is unavailable
-        pass
-    return True 
+    except Exception as exc:
+        # The graph database may be unavailable; log it so the leftover graph is discoverable.
+        logger.warning(f"[ProjectDelete] Graph cleanup failed for project {project_id}: {exc}")
+    return True

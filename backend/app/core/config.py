@@ -100,7 +100,8 @@ class BootstrapSettings(BaseSettings):
     """Startup initialization configuration"""
     
     # Whether to overwrite built-in data (prompts, knowledge bases, etc.)
-    overwrite: bool = Field(default=True, alias="BOOTSTRAP_OVERWRITE")
+    # Default false: silently reverting user edits on restart is data loss.
+    overwrite: bool = Field(default=False, alias="BOOTSTRAP_OVERWRITE")
     # Whether to overwrite built-in card type schemas
     overwrite_card_schemas: bool = Field(default=False, alias="BOOTSTRAP_OVERWRITE_CARD_SCHEMAS")
     
@@ -151,7 +152,8 @@ class AppSettings(BaseSettings):
     app_name: str = Field(default="NovelForge", alias="APP_NAME")
     
     # Application version
-    app_version: str = Field(default="1.0.0", alias="APP_VERSION")
+    # Version (kept aligned with frontend/package.json and the README changelog)
+    app_version: str = Field(default="0.10.0", alias="APP_VERSION")
     
     # Whether to enable debug mode
     debug: bool = Field(default=False, alias="DEBUG")

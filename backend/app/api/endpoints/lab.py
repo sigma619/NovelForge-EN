@@ -7,6 +7,7 @@ it benefits from background execution, node progress and checkpoint resume.
 from __future__ import annotations
 
 import base64
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -101,13 +102,16 @@ def _detect(req: ManuscriptPreviewRequest) -> Tuple[List[DetectedChapter], Detec
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse file: {e}")
-    result = detect_chapters(
-        text,
-        chapter_pattern=req.chapter_pattern or None,
-        volume_pattern=req.volume_pattern or None,
-        exclude_front_matter=req.exclude_front_matter,
-        exclude_afterword=req.exclude_afterword,
-    )
+    try:
+        result = detect_chapters(
+            text,
+            chapter_pattern=req.chapter_pattern or None,
+            volume_pattern=req.volume_pattern or None,
+            exclude_front_matter=req.exclude_front_matter,
+            exclude_afterword=req.exclude_afterword,
+        )
+    except re.error as e:
+        raise HTTPException(status_code=400, detail=f"Invalid chapter/volume regex: {e}")
     chapters = apply_corrections(result.chapters, req.corrections) if req.corrections else result.chapters
     return chapters, result
 

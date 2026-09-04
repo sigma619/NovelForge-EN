@@ -1,4 +1,4 @@
-{
+﻿{
   "app": {
     "workflow": {
       "loadingName": "Loading...",
@@ -57,6 +57,9 @@
       "daysAgo": "{n} days ago",
       "uncategorized": "Uncategorized",
       "toolCallFailed": "Tool call failed",
+      "toolCallRetrying": "Tool call failed: {reason}, retrying ({current}/{max})...",
+      "toolCallError": "Tool call failed: {message}",
+      "errorPrefix": "[Error]",
       "executionFailed": "Execution failed",
       "taskCompleted": "Task Completed",
       "callingTool": "Calling tool: {name}",

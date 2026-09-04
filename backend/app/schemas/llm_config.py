@@ -1,7 +1,7 @@
-﻿
 from datetime import datetime
 from typing import Any, Literal, Optional
 
+from pydantic import field_serializer
 from sqlmodel import SQLModel
 
 
@@ -9,6 +9,15 @@ LLMApiProtocol = Literal["chat_completions", "responses"]
 LLMAssistantMode = Literal["auto", "standard", "react", "plain"]
 LLMCapabilityOverall = Literal["full", "writing_review_only", "react_assistant", "plain_only", "unusable", "unknown"]
 LLMCapabilityStatus = Literal["pass", "fail", "skip"]
+
+# Sentinel returned instead of the real key in read payloads, so that API keys
+# are never exposed through list/read endpoints (e.g. to other origins via CORS).
+MASKED_API_KEY = "*" * 12
+
+
+def is_masked_api_key(value: Optional[str]) -> bool:
+    """True when the value is the read-path mask (or looks like it)."""
+    return bool(value) and set(str(value)) == {"*"}
 
 class LLMConfigBase(SQLModel):
     provider: str
@@ -38,6 +47,12 @@ class LLMConfigCreate(LLMConfigBase):
 
 class LLMConfigRead(LLMConfigBase):
     id: int
+
+    @field_serializer("api_key")
+    def _mask_api_key(self, value: Optional[str]) -> Optional[str]:
+        # Never echo the real key back through the API; clients send the real
+        # key only when the user types it, and update calls ignore masked values.
+        return MASKED_API_KEY if value else value
 
 class LLMConfigUpdate(SQLModel):
     provider: Optional[str] = None

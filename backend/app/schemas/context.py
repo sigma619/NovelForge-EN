@@ -13,6 +13,7 @@ class AssembleContextRequest(BaseModel):
 	chapter_number: Optional[int] = Field(default=None, description="Chapter number")
 	chapter_id: Optional[int] = Field(default=None, description="Chapter card ID (optional)")
 	participants: Optional[List[str]] = Field(default=None, description="List of participating entity names")
+	pov: Optional[str] = Field(default=None, description="POV character name (defaults to the first participant)")
 	current_draft_tail: Optional[str] = Field(default=None, description="Context template (draft tail)")
 	recent_chapters_window: Optional[int] = Field(default=None, description="Recent window (kept for future extension)")
 
