@@ -14,6 +14,8 @@
       <el-table-column label="API Base" width="240">
         <template #default="{ row }">
           <span v-if="row.provider === 'openai_compatible'">{{ row.api_base }}</span>
+          <span v-else-if="row.provider === 'authnd' || row.provider === 'nvidia_authnd'">{{ row.api_base ? `Proxy: ${row.api_base}` : 'NVIDIA Build (Token)' }}</span>
+          <span v-else-if="row.provider === 'genspark'">{{ row.api_base ? `Proxy: ${row.api_base}` : 'Genspark (Browser/Token)' }}</span>
           <span v-else style="color: #909399; font-style: italic">{{
             t('settings.defaultWithProvider', { provider: row.provider })
           }}</span>

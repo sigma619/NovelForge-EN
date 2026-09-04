@@ -95,6 +95,14 @@ async def get_models_endpoint(request: LLMGetModelsRequest):
                     if "models" in data and isinstance(data["models"], list):
                         models = [m["name"].replace("models/", "") for m in data["models"] if "name" in m]
 
+        elif provider in {"authnd", "nvidia_authnd"}:
+            from app.services.ai.providers import authnd_auth
+            models = list(authnd_auth.AUTHND_PRESET_MODELS)
+
+        elif provider in {"genspark"}:
+            from app.services.ai.providers import genspark_auth
+            models = list(genspark_auth.GENSPARK_PRESET_MODELS)
+
         return ApiResponse(data=models)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to fetch model list: {str(e)}")

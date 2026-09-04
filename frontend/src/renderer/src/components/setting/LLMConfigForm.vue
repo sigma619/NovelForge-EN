@@ -11,6 +11,8 @@
         <el-option label="OpenAI" value="openai" />
         <el-option label="Google" value="google" />
         <el-option label="Anthropic" value="anthropic" />
+        <el-option label="AuthND (NVIDIA Build)" value="authnd" />
+        <el-option label="Genspark AI (Browser/Token)" value="genspark" />
       </el-select>
     </el-form-item>
 
@@ -21,9 +23,9 @@
     <el-form-item label="API Base" prop="api_base">
       <el-input
         v-model="form.api_base"
-        :disabled="!isOpenAIProvider"
+        :disabled="!isOpenAIProvider && !isAuthNDProvider && !isGensparkProvider"
         :input-props="{ autocomplete: 'off', name: 'api_base_no_fill' }"
-        :placeholder="t('settings.apiBasePlaceholder')"
+        :placeholder="isAuthNDProvider || isGensparkProvider ? 'Optional Proxy (e.g. socks5://127.0.0.1:9050)' : t('settings.apiBasePlaceholder')"
       />
     </el-form-item>
 
@@ -32,7 +34,7 @@
         v-model="form.api_key"
         type="password"
         :input-props="{ autocomplete: 'new-password', name: 'api_key_no_fill' }"
-        :placeholder="t('settings.apiKeyPlaceholder')"
+        :placeholder="isAuthNDProvider || isGensparkProvider ? 'Not required for AuthND / Genspark (Browser/Token)' : t('settings.apiKeyPlaceholder')"
         show-password
       />
     </el-form-item>
@@ -251,6 +253,12 @@ const form = reactive({
 const isOpenAIProvider = computed(
   () => form.provider === 'openai' || form.provider === 'openai_compatible'
 )
+const isAuthNDProvider = computed(
+  () => form.provider === 'authnd' || form.provider === 'nvidia_authnd'
+)
+const isGensparkProvider = computed(
+  () => form.provider === 'genspark'
+)
 const overallAlertType = computed(() => {
   const overall = capabilityResult.value?.overall
   if (overall === 'full' || overall === 'react_assistant' || overall === 'writing_review_only')
@@ -303,7 +311,22 @@ const querySearch = (queryString: string, cb: any) => {
 const rules = reactive<FormRules>({
   provider: [{ required: true, message: t('settings.ruleSelectProvider'), trigger: 'change' }],
   model_name: [{ required: true, message: t('settings.ruleEnterModelName'), trigger: 'blur' }],
-  api_key: [{ required: true, message: t('settings.ruleEnterApiKey'), trigger: 'blur' }],
+  api_key: [
+    {
+      validator: (_rule: any, value: any, callback: any) => {
+        if (form.provider === 'authnd' || form.provider === 'nvidia_authnd' || form.provider === 'genspark') {
+          callback()
+          return
+        }
+        if (!value || !value.trim()) {
+          callback(new Error(t('settings.ruleEnterApiKey')))
+          return
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
+  ],
   token_limit: [{ required: true, message: t('settings.ruleEnterTokenLimit'), trigger: 'blur' }],
   call_limit: [{ required: true, message: t('settings.ruleEnterCallLimit'), trigger: 'blur' }]
 })
@@ -318,6 +341,13 @@ watch(
       form.user_agent = ''
       showAdvancedTransport.value = false
       showRareTransportFields.value = false
+    }
+    if (provider === 'authnd' || provider === 'nvidia_authnd') {
+      if (!form.model_name) form.model_name = 'moonshotai/kimi-k3'
+      if (!form.display_name) form.display_name = 'AuthND (Kimi K3)'
+    } else if (provider === 'genspark') {
+      if (!form.model_name) form.model_name = 'gpt-5.6-sol'
+      if (!form.display_name) form.display_name = 'Genspark (GPT-5.6)'
     }
   }
 )
@@ -409,7 +439,7 @@ async function handleSubmit() {
 }
 
 async function handleFetchModels() {
-  if (!form.api_key) {
+  if (!form.api_key && !isAuthNDProvider.value && !isGensparkProvider.value) {
     ElMessage.warning(t('settings.enterApiKeyFirst'))
     return
   }

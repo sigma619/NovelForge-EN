@@ -14,6 +14,8 @@ from sqlmodel import Session
 
 from app.db.models import LLMConfig
 from app.services import llm_config_service
+from app.services.ai.providers.chat_authnd import ChatAuthND
+from app.services.ai.providers.chat_genspark import ChatGenspark
 
 
 def _sanitize_common_generation_kwargs(
@@ -53,7 +55,7 @@ def build_chat_model_from_payload(
     *,
     provider: str,
     model_name: str,
-    api_key: str,
+    api_key: str = "",
     api_base: str | None = None,
     base_url: str | None = None,
     api_protocol: str | None = None,
@@ -64,7 +66,8 @@ def build_chat_model_from_payload(
     timeout: Optional[float] = None,
     thinking_enabled: Optional[bool] = None,
 ):
-    if not api_key:
+    norm_provider = (provider or "").strip().lower()
+    if not api_key and norm_provider not in {"authnd", "nvidia_authnd", "genspark"}:
         raise ValueError("No API Key provided")
 
     transport = llm_config_service.resolve_transport_settings(
@@ -81,6 +84,26 @@ def build_chat_model_from_payload(
         max_tokens=max_tokens,
         timeout=timeout,
     )
+
+    if provider_name in {"authnd", "nvidia_authnd"}:
+        # AuthND (NVIDIA Build browser-backed route, no API key required)
+        proxy = transport.get("api_base") if transport.get("api_base") and transport.get("api_base", "").startswith(("http://", "https://", "socks5://", "socks5h://")) else None
+        return ChatAuthND(
+            model=model_name or "moonshotai/kimi-k3",
+            proxy=proxy,
+            thinking_enabled=thinking_enabled,
+            **common_kwargs,
+        )
+
+    if provider_name in {"genspark"}:
+        # Genspark AI (browser-backed / TLS route, no API key required)
+        proxy = transport.get("api_base") if transport.get("api_base") and transport.get("api_base", "").startswith(("http://", "https://", "socks5://", "socks5h://")) else None
+        return ChatGenspark(
+            model=model_name or "gpt-5.6-sol",
+            proxy=proxy,
+            thinking_enabled=thinking_enabled,
+            **common_kwargs,
+        )
 
     if provider_name in {"openai_compatible", "openai"}:
         model_kwargs = {
@@ -136,7 +159,8 @@ def _get_llm_config(session: Session, llm_config_id: int) -> LLMConfig:
     cfg = llm_config_service.get_llm_config(session, llm_config_id)
     if not cfg:
         raise ValueError(f"LLM config does not exist, ID: {llm_config_id}")
-    if not cfg.api_key:
+    norm_provider = (cfg.provider or "").strip().lower()
+    if not cfg.api_key and norm_provider not in {"authnd", "nvidia_authnd", "genspark"}:
         raise ValueError(f"No API key found for LLM config {cfg.display_name or cfg.model_name}")
     return cfg
 

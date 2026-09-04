@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.endpoints import ai, cards, llm_configs, projects, prompts
+from app.api.endpoints import ai, authnd, cards, genspark, llm_configs, projects, prompts
 from app.api.endpoints import assistant as assistant_ep
 from app.api.endpoints import bible as bible_ep
 from app.api.endpoints import chapter_reviews as chapter_reviews_ep
@@ -17,6 +17,8 @@ from app.api.endpoints import workflows as workflows_ep
 api_router = APIRouter()
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(llm_configs.router, prefix="/llm-configs", tags=["llm-configs"])
+api_router.include_router(authnd.router, prefix="/authnd", tags=["authnd"])
+api_router.include_router(genspark.router, prefix="/genspark", tags=["genspark"])
 
 api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
 api_router.include_router(assistant_ep.router, prefix="/ai", tags=["assistant"])

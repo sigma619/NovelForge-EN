@@ -184,6 +184,16 @@ async def _probe_models_list(request: LLMCapabilityTestRequest, *, user_agent: s
             count = len(data.get("models") or []) if isinstance(data, dict) else 0
             return ProbeResult(status="pass", message=f"Model list returned {count} item(s)")
 
+        if provider in {"authnd", "nvidia_authnd"}:
+            from app.services.ai.providers import authnd_auth
+            count = len(authnd_auth.AUTHND_PRESET_MODELS)
+            return ProbeResult(status="pass", message=f"AuthND returned {count} preset model(s)")
+
+        if provider in {"genspark"}:
+            from app.services.ai.providers import genspark_auth
+            count = len(genspark_auth.GENSPARK_PRESET_MODELS)
+            return ProbeResult(status="pass", message=f"Genspark returned {count} preset model(s)")
+
         return ProbeResult(status="skip", message="Provider model list probe is not implemented")
     except Exception as exc:
         return _result_from_exception(exc, request.api_key)
